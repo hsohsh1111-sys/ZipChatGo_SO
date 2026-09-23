@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>매물 등록 | 집찾GO</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=706d1a4da6d31b1ee3225b688aaa6b0d&libraries=services&autoload=false"></script>
+<link rel="stylesheet" th:href="@{/css/common.css}">
+<link rel="stylesheet" th:href="@{/css/register.css}">
+</head>
+<body>
+
+<header class="main-header" id="mainHeader">
+  <div class="logo">
+    <a th:href="@{/}"><img th:src="@{/static/images/logo.png}" alt="집찾GO"></a>
+  </div>
+  <button class="menu-btn" id="menuBtn" aria-label="메뉴 열기">
+    <span></span><span></span><span></span>
+  </button>
+  <nav class="top-nav" id="topNav">
+    <a th:href="@{/templates/support/contact.html}"><i class="fa-solid fa-headset"></i>고객센터</a>
+  </nav>
+</header>
+
+<div class="page-wrap">
+
+  <!-- HERO -->
+  <section class="reg-hero">
+    <div>
+      <span class="eyebrow">매물 등록</span>
+      <h1>우리 동네를 가장 잘 아는<br>사람에게, 내 집을 보여주세요</h1>
+      <p class="hero-sub">사진 몇 장과 기본 정보만 입력하면 등록 끝. 집찾GO 담당자 확인 후 24시간 이내에 게시돼요.</p>
+      <div class="hero-badges">
+        <span><i class="fa-solid fa-check"></i>등록비 무료</span>
+        <span><i class="fa-regular fa-clock"></i>평균 6분 소요</span>
+        <span><i class="fa-solid fa-shield-heart"></i>소유자 확인 후 게시</span>
+      </div>
+      <a href="#registerForm" class="cta-btn">지금 등록하기 <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="flyer-teaser" aria-hidden="true">
+      <div class="fy-photo" id="fyPhoto">
+        <button type="button" class="fy-photo-nav prev" id="fyPhotoPrev" aria-label="이전 사진"><i class="fa-solid fa-chevron-left"></i></button>
+        <button type="button" class="fy-photo-nav next" id="fyPhotoNext" aria-label="다음 사진"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="fy-photo-dots" id="fyPhotoDots"></div>
+      </div>
+      <span class="fy-badge">매매</span>
+      <div class="fy-price">4억 8,000</div>
+      <div class="fy-addr">서울 마포구 합정동</div>
+      <div class="fy-spec">84㎡ · 방3 · 욕1 · 12/20층</div>
+      <span class="fy-watermark">예시</span>
+    </div>
+  </section>
+
+  <!-- STEP NAV -->
+  <nav class="steps-nav" aria-label="등록 단계">
+    <button type="button" class="step-tab active" data-step="1"><span class="num">01</span><span>기본정보</span></button>
+    <button type="button" class="step-tab" data-step="2"><span class="num">02</span><span>상세정보</span></button>
+    <button type="button" class="step-tab" data-step="3"><span class="num">03</span><span>사진</span></button>
+    <button type="button" class="step-tab" data-step="4"><span class="num">04</span><span>확인·등록</span></button>
+  </nav>
+
+  <!-- REGISTER FORM + PREVIEW -->
+  <section class="register-section" id="registerForm">
+    <form class="listing-form" id="listingForm">
+
+      <!-- STEP 1 -->
+      <div class="form-step active" data-step="1">
+        <h2>기본정보</h2>
+        <p class="step-desc">어떤 집을 어떤 방식으로 내놓으실 건가요?</p>
+
+        <div class="field">
+          <label>매물 유형</label>
+          <div class="chip-group" id="propertyTypeGroup">
+            <label class="chip selected"><input type="radio" name="propertyType" value="아파트" checked>아파트</label>
+            <label class="chip"><input type="radio" name="propertyType" value="빌라/연립">빌라·연립</label>
+            <label class="chip"><input type="radio" name="propertyType" value="원룸/투룸">원룸·투룸</label>
+            <label class="chip"><input type="radio" name="propertyType" value="단독주택">단독주택</label>
+            <label class="chip"><input type="radio" name="propertyType" value="오피스텔">오피스텔</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>거래 유형</label>
+          <div class="chip-group" id="dealTypeGroup">
+            <label class="chip selected"><input type="radio" name="dealType" value="매매" checked>매매</label>
+            <label class="chip"><input type="radio" name="dealType" value="전세">전세</label>
+            <label class="chip"><input type="radio" name="dealType" value="월세">월세</label>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="addr1">주소</label>
+          <div class="addr-input-row">
+            <input type="text" id="addr1" placeholder="도로명 주소를 입력해보세요 (예: 성남시 분당구 판교로 242)" autocomplete="off">
+            <button type="button" id="geoCheckBtn" class="geo-btn"><i class="fa-solid fa-location-crosshairs"></i> 위치 확인</button>
+            <ul class="addr-suggest-list" id="addrSuggestList"></ul>
+          </div>
+        </div>
+        <div class="field">
+          <label for="addr2">상세주소 (동/호수)</label>
+          <input type="text" id="addr2" placeholder="예: 3동 1204호">
+        </div>
+
+        <div class="field">
+          <label>위치 확인 <span class="badge-auto" id="mapStatusBadge" style="display:none">자동입력</span></label>
+          <div class="map-preview" id="mapPreview">
+            <div class="map-placeholder" id="mapPlaceholder">
+              <i class="fa-solid fa-map-location-dot"></i>
+              <p>주소를 입력하고 '위치 확인'을 누르면<br>실제 지도에 위치가 표시돼요</p>
+            </div>
+            <div id="vworldMap" class="vworld-map"></div>
+          </div>
+          <p class="map-note" id="mapNote">주소를 입력하면 카카오맵으로 위치를 확인해요. 분당구 안이면 학군 정보도 함께 자동으로 채워져요.</p>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="form-step" data-step="2">
+        <h2>상세정보</h2>
+        <p class="step-desc">집의 구조와 특징을 알려주세요.</p>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="area">전용면적 (㎡)</label>
+            <input type="number" id="area" placeholder="예: 84">
+          </div>
+          <div class="field">
+            <label for="floor">층수 / 전체층</label>
+            <input type="text" id="floor" placeholder="예: 12/20">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="rooms">방 개수</label>
+            <input type="number" id="rooms" placeholder="예: 3">
+          </div>
+          <div class="field">
+            <label for="baths">욕실 개수</label>
+            <input type="number" id="baths" placeholder="예: 1">
+          </div>
+        </div>
+        <div class="field">
+          <label>이런 특징이 있어요</label>
+          <div class="tag-grid" id="tagGrid">
+            <label class="chip"><input type="checkbox" value="주차가능">주차가능</label>
+            <label class="chip"><input type="checkbox" value="엘리베이터">엘리베이터</label>
+            <label class="chip"><input type="checkbox" value="반려동물 가능">반려동물 가능</label>
+            <label class="chip"><input type="checkbox" value="신축">신축</label>
+            <label class="chip"><input type="checkbox" value="남향">남향</label>
+            <label class="chip"><input type="checkbox" value="즉시입주가능">즉시입주가능</label>
+          </div>
+          <div class="custom-tag-row">
+            <input type="text" id="customTagInput" placeholder="원하는 특징을 직접 입력해보세요 (예: 남향, 복층)" maxlength="10">
+            <button type="button" id="customTagAdd" class="custom-tag-btn"><i class="fa-solid fa-plus"></i> 추가</button>
+          </div>
+          <p class="custom-tag-note">최대 5개까지 직접 추가할 수 있어요.</p>
+        </div>
+
+        <div class="subsection-title"><i class="fa-solid fa-file-invoice-dollar"></i> 관리비 정보</div>
+        <div class="field-row">
+          <div class="field">
+            <label for="maintenanceFee">일반(공용) 관리비 (만원)</label>
+            <input type="text" id="maintenanceFee" placeholder="예: 8">
+          </div>
+          <div class="field">
+            <label for="etcFee">기타 관리비 (선택)</label>
+            <input type="text" id="etcFee" placeholder="예: 정화조 청소비 별도 5,000원">
+          </div>
+        </div>
+        <div class="field">
+          <label>관리비에 포함된 사용료</label>
+          <div class="chip-group" id="utilityGroup">
+            <label class="chip"><input type="checkbox" value="전기">전기</label>
+            <label class="chip"><input type="checkbox" value="수도">수도</label>
+            <label class="chip"><input type="checkbox" value="가스">가스</label>
+            <label class="chip"><input type="checkbox" value="인터넷">인터넷</label>
+            <label class="chip"><input type="checkbox" value="TV">TV</label>
+          </div>
+        </div>
+
+        <div class="subsection-title"><i class="fa-solid fa-plug"></i> 옵션 정보</div>
+        <div class="field">
+          <label>제공되는 옵션을 선택해주세요</label>
+          <div class="tag-grid" id="optionGrid">
+            <label class="chip"><input type="checkbox" value="에어컨">에어컨</label>
+            <label class="chip"><input type="checkbox" value="세탁기">세탁기</label>
+            <label class="chip"><input type="checkbox" value="냉장고">냉장고</label>
+            <label class="chip"><input type="checkbox" value="가스레인지">가스레인지</label>
+            <label class="chip"><input type="checkbox" value="전자레인지">전자레인지</label>
+            <label class="chip"><input type="checkbox" value="침대">침대</label>
+            <label class="chip"><input type="checkbox" value="싱크대">싱크대</label>
+            <label class="chip"><input type="checkbox" value="옷장">옷장</label>
+          </div>
+          <div class="custom-tag-row">
+            <input type="text" id="customOptionInput" placeholder="다른 옵션을 직접 입력해보세요 (예: 건조기)" maxlength="10">
+            <button type="button" id="customOptionAdd" class="custom-tag-btn"><i class="fa-solid fa-plus"></i> 추가</button>
+          </div>
+          <p class="custom-tag-note">최대 5개까지 직접 추가할 수 있어요.</p>
+        </div>
+
+        <div class="subsection-title">
+          <i class="fa-solid fa-train-subway"></i> 교통정보
+          <span class="badge-auto" id="transitAutoBadge" style="display:none">자동입력</span>
+        </div>
+        <div class="school-auto-panel" id="transitAutoPanel">
+          <div class="school-auto-empty" id="transitAutoEmpty">
+            <i class="fa-solid fa-location-dot"></i>
+            <p>1단계에서 주소를 입력하고 '위치 확인'을 누르면<br>가까운 지하철역·버스정류장이 자동으로 채워져요.</p>
+          </div>
+          <div class="school-auto-result" id="transitAutoResult" style="display:none">
+            <div class="school-auto-row">
+              <span class="school-auto-level">지하철역</span>
+              <div class="school-auto-body" id="transitAutoBodySubway"></div>
+            </div>
+            <div class="school-auto-row">
+              <span class="school-auto-level">버스정류장</span>
+              <div class="school-auto-body" id="transitAutoBodyBus"></div>
+            </div>
+          </div>
+        </div>
+        <p class="custom-tag-note">교통정보는 입력이 아니라 주소 기준 직선거리로 자동 계산돼요. 실제 도보 경로 거리와는 다를 수 있어요.</p>
+
+        <div class="subsection-title">
+          <i class="fa-solid fa-graduation-cap"></i> 학군정보
+          <span class="badge-auto" id="schoolAutoBadge" style="display:none">자동입력</span>
+        </div>
+        <div class="school-auto-panel" id="schoolAutoPanel">
+          <div class="school-auto-empty" id="schoolAutoEmpty">
+            <i class="fa-solid fa-location-dot"></i>
+            <p>1단계에서 주소를 입력하고 '위치 확인'을 누르면<br>학군 정보가 여기에 자동으로 채워져요.</p>
+          </div>
+          <div class="school-auto-result" id="schoolAutoResult" style="display:none">
+            <div class="school-auto-row" id="schoolAutoRowEl">
+              <span class="school-auto-level">초등학교</span>
+              <div class="school-auto-body" id="schoolAutoBodyEl"></div>
+            </div>
+            <div class="school-auto-row" id="schoolAutoRowMid">
+              <span class="school-auto-level">중학교</span>
+              <div class="school-auto-body" id="schoolAutoBodyMid"></div>
+            </div>
+            <div class="school-auto-row" id="schoolAutoRowHigh">
+              <span class="school-auto-level">고등학교</span>
+              <div class="school-auto-body" id="schoolAutoBodyHigh"></div>
+            </div>
+          </div>
+        </div>
+        <p class="custom-tag-note">학군 정보는 입력이 아니라 주소를 기반으로 자동 계산돼요. 등록자가 직접 확인한 정보가 아니므로 담당자 검토 시 한 번 더 확인해요.</p>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="form-step" data-step="3">
+        <h2>사진</h2>
+        <p class="step-desc">밝고 선명한 사진일수록 문의가 빨리 와요. 첫 번째 사진이 대표 사진이 돼요.</p>
+        <label class="upload-box" for="photoInput">
+          <i class="fa-solid fa-camera"></i>
+          클릭해서 사진 올리기 (여러 장 선택 가능, 최대 10장)
+        </label>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none">
+        <div class="thumb-grid" id="thumbGrid"></div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="form-step" data-step="4">
+        <h2>확인·등록</h2>
+        <p class="step-desc">가격과 연락처를 입력하면 등록 준비가 끝나요.</p>
+
+        <div class="field" id="saleFields">
+          <label for="price">매매가 (만원)</label>
+          <input type="text" id="price" placeholder="예: 48000">
+          <p class="price-hint" id="priceHint"></p>
+        </div>
+        <div class="field-row" id="rentFields" style="display:none">
+          <div class="field">
+            <label for="deposit">보증금 (만원)</label>
+            <input type="text" id="deposit" placeholder="예: 3000">
+            <p class="price-hint" id="depositHint"></p>
+          </div>
+          <div class="field">
+            <label for="monthly">월세 (만원)</label>
+            <input type="text" id="monthly" placeholder="예: 60">
+            <p class="price-hint" id="monthlyHint"></p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="ownerName">이름</label>
+            <input type="text" id="ownerName" placeholder="집주인 이름">
+          </div>
+          <div class="field">
+            <label for="ownerPhone">연락처</label>
+            <input type="tel" id="ownerPhone" placeholder="010-0000-0000">
+          </div>
+        </div>
+
+        <div class="subsection-title"><i class="fa-solid fa-file-shield"></i> 소유 확인 서류 <span class="optional-tag">선택</span></div>
+        <p class="price-hint">계약 단계에서 필요한 서류예요. 지금 올리지 않아도 매물 등록은 가능하며, 준비되면 나중에 추가하실 수 있어요.</p>
+
+        <div class="field" id="ownershipDocField">
+          <label for="ownershipDoc">등기부등본 <span class="optional-tag">선택</span></label>
+          <input type="file" id="ownershipDoc" data-doc-type="OWNERSHIP" accept=".pdf,.jpg,.jpeg,.png">
+          <p class="price-hint" data-doc-hint="ownershipDoc">선택한 파일이 없어요.</p>
+        </div>
+
+        <div class="field" id="buildingRegisterField">
+          <label for="buildingRegisterDoc">건축물대장 <span class="optional-tag">선택</span></label>
+          <input type="file" id="buildingRegisterDoc" data-doc-type="BUILDING_REGISTER" accept=".pdf,.jpg,.jpeg,.png">
+          <p class="price-hint" data-doc-hint="buildingRegisterDoc">선택한 파일이 없어요.</p>
+        </div>
+
+        <div class="field" id="landRegisterField">
+          <label for="landRegisterDoc">토지대장 <span class="optional-tag">선택</span></label>
+          <input type="file" id="landRegisterDoc" data-doc-type="LAND_REGISTER" accept=".pdf,.jpg,.jpeg,.png">
+          <p class="price-hint" data-doc-hint="landRegisterDoc">선택한 파일이 없어요.</p>
+        </div>
+
+        <div class="subsection-title"><i class="fa-solid fa-id-card"></i> 본인 인증</div>
+
+        <div class="field" id="idCardField">
+          <label for="idCardDoc">신분증 <span class="optional-tag">준비 중</span></label>
+          <input type="file" id="idCardDoc" disabled>
+          <p class="price-hint">실시간 촬영 본인인증 기능은 추후 제공될 예정이에요.</p>
+        </div>
+
+        <div class="field" id="sealCertificateField">
+          <label for="sealCertificateDoc">인감증명서 <span class="optional-tag">선택</span></label>
+          <input type="file" id="sealCertificateDoc" data-doc-type="SEAL_CERTIFICATE" accept=".pdf,.jpg,.jpeg,.png">
+          <p class="price-hint" data-doc-hint="sealCertificateDoc">선택한 파일이 없어요.</p>
+        </div>
+
+        <div class="agree-row">
+          <input type="checkbox" id="ownerCheck">
+          <label for="ownerCheck">본인이 소유자이거나 정당한 위임을 받았으며, 입력한 정보가 사실임을 확인합니다.</label>
+        </div>
+      </div>
+
+      <div class="form-nav">
+        <button type="button" class="btn-ghost" id="prevBtn" style="visibility:hidden">이전</button>
+        <button type="button" class="btn-primary" id="nextBtn">다음</button>
+        <button type="submit" class="btn-primary" id="submitBtn" style="display:none">등록 완료</button>
+      </div>
+    </form>
+
+    <!-- LIVE PREVIEW (signature element) -->
+    <aside class="preview-flyer">
+      <p class="preview-label"><i class="fa-solid fa-eye"></i>구매자에게 이렇게 보여요</p>
+      <div class="flyer-card" id="flyerCard" role="button" tabindex="0" aria-label="상세정보 보기">
+        <div class="flyer-photo" id="flyerPhoto">
+          <span class="flyer-photo-hint" id="flyerPhotoHint">사진을 올리면<br>여기에 표시돼요</span>
+          <button type="button" class="fy-photo-nav prev" id="flyerPhotoPrev" aria-label="이전 사진" style="display:none"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" class="fy-photo-nav next" id="flyerPhotoNext" aria-label="다음 사진" style="display:none"><i class="fa-solid fa-chevron-right"></i></button>
+          <div class="fy-photo-dots" id="flyerPhotoDots"></div>
+        </div>
+        <span class="flyer-deal" id="flyerDeal">매매</span>
+        <div class="flyer-price" id="flyerPrice">가격 미입력</div>
+        <div class="flyer-addr" id="flyerAddr">주소를 입력해주세요</div>
+        <div class="flyer-spec" id="flyerSpec">면적 · 방 · 욕실 · 층수</div>
+        <span class="flyer-stamp">집찾GO</span>
+        <span class="flyer-detail-hint"><i class="fa-solid fa-expand"></i> 상세정보 보기</span>
+      </div>
+      <p class="preview-note">입력하는 즉시 미리보기가 바뀌어요. 카드를 누르면 상세정보를 볼 수 있어요.</p>
+    </aside>
+  </section>
+
+  <!-- 상세정보 모달 -->
+  <div class="detail-modal" id="detailModal" aria-hidden="true">
+    <div class="detail-modal-backdrop" id="detailModalBackdrop"></div>
+    <div class="detail-modal-panel" role="dialog" aria-label="매물 상세정보">
+      <button type="button" class="detail-modal-close" id="detailModalClose" aria-label="닫기"><i class="fa-solid fa-xmark"></i></button>
+      <p class="detail-modal-label"><i class="fa-solid fa-list-check"></i>상세정보 미리보기</p>
+      <div class="detail-modal-summary">
+        <span class="flyer-deal" id="modalDeal">매매</span>
+        <div class="flyer-price" id="modalPrice">가격 미입력</div>
+        <div class="flyer-addr" id="modalAddr">주소를 입력해주세요</div>
+        <div class="flyer-spec" id="modalSpec">면적 · 방 · 욕실 · 층수</div>
+      </div>
+      <div class="detail-modal-block">
+        <h4>이런 특징이 있어요</h4>
+        <div class="flyer-tags" id="flyerTags"></div>
+      </div>
+      <div class="detail-modal-block">
+        <h4>제공되는 옵션</h4>
+        <div class="flyer-options" id="flyerOptions"></div>
+      </div>
+      <div class="detail-modal-block">
+        <h4>관리비 정보</h4>
+        <div class="flyer-meta" id="flyerFee"></div>
+      </div>
+      <div class="detail-modal-block">
+        <h4>교통정보 <span class="badge-auto">자동입력</span></h4>
+        <div class="info-tabs" id="transitTabs">
+          <button type="button" class="info-tab active" data-transit-tab="subway">지하철</button>
+          <button type="button" class="info-tab" data-transit-tab="bus">버스</button>
+        </div>
+        <div class="flyer-meta" id="flyerTransit"></div>
+      </div>
+      <div class="detail-modal-block">
+        <h4>학군정보 <span class="badge-auto">자동입력</span></h4>
+        <div class="info-tabs" id="schoolTabs">
+          <button type="button" class="info-tab active" data-school-tab="el">초등학교</button>
+          <button type="button" class="info-tab" data-school-tab="mid">중학교</button>
+          <button type="button" class="info-tab" data-school-tab="high">고등학교</button>
+        </div>
+        <div class="flyer-meta" id="flyerSchool"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BENEFITS -->
+  <section class="benefits">
+    <div class="section-head">
+      <h2>집찾GO에 등록하면 좋은 점</h2>
+      <p>부동산 사무실 여러 곳을 돌지 않아도, 우리 동네 매수자에게 바로 닿아요</p>
+    </div>
+    <div class="benefit-grid">
+      <div class="benefit-card">
+        <i class="fa-solid fa-bolt"></i>
+        <h3>등록비 없이, 6분이면 끝</h3>
+        <p>중개수수료 걱정 없이 직접 등록해요. 사진과 정보만 있으면 바로 시작할 수 있어요.</p>
+      </div>
+      <div class="benefit-card">
+        <i class="fa-solid fa-user-shield"></i>
+        <h3>소유자 확인 후 게시</h3>
+        <p>등록된 매물은 담당자가 한 번 더 확인한 뒤 게시돼서, 허위 매물 걱정이 없어요.</p>
+      </div>
+      <div class="benefit-card">
+        <i class="fa-solid fa-location-dot"></i>
+        <h3>동네를 찾는 사람에게 우선 노출</h3>
+        <p>같은 동네, 같은 조건을 찾는 사람에게 먼저 보여줘서 문의로 이어질 확률이 높아요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="section-head">
+      <h2>자주 묻는 질문</h2>
+    </div>
+    <details>
+      <summary>등록은 정말 무료인가요?</summary>
+      <p>네, 매물 등록과 게시 모두 무료예요. 별도의 중개수수료 없이 직접 판매자와 구매자가 연결돼요.</p>
+    </details>
+    <details>
+      <summary>등록 후 얼마 만에 게시되나요?</summary>
+      <p>정보와 사진을 확인하는 데 보통 24시간이 걸려요. 확인이 끝나면 알림으로 알려드려요.</p>
+    </details>
+    <details>
+      <summary>임차인인데 대신 등록할 수 있나요?</summary>
+      <p>소유자의 위임을 받은 경우에만 등록할 수 있어요. 등록 시 위임 여부를 확인하는 절차가 있어요.</p>
+    </details>
+    <details>
+      <summary>등록한 정보는 나중에 수정할 수 있나요?</summary>
+      <p>네, 게시 이후에도 마이페이지에서 가격, 사진, 설명을 언제든지 수정할 수 있어요.</p>
+    </details>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <h2>준비되셨다면, 지금 시작해보세요</h2>
+    <p>입력한 내용은 자동으로 저장되니 천천히 작성해도 괜찮아요.</p>
+    <a href="#registerForm" class="cta-btn">매물 등록 시작하기 <i class="fa-solid fa-arrow-right"></i></a>
+  </section>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a th:href="@{/}">
+        <img th:src="@{/static/images/logo.png}" alt="집찾GO"></a>
+      <div>
+        <h2>집찾GO</h2>
+        <p>동네를 가장 잘 아는 사람들의 부동산 플랫폼</p>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a th:href="@{/}">홈</a>
+      <a th:href="@{/templates/property/search.html}">매물찾기</a>
+      <a th:href="@{/templates/property/register.html}">매물 등록</a>
+      <a th:href="@{/templates/support/guide.html}">이용가이드</a>
+      <a th:href="@{/templates/support/contact.html}">고객센터</a>
+    </div>
+  </div>
+  <div class="footer-info">
+    <span>㈜집찾GO</span>
+    <span>대표 홍길동</span>
+    <span>사업자등록번호 000-00-00000</span>
+    <span>서울특별시 강남구 테헤란로 000</span>
+    <span>© 2026 JipchatGO. All rights reserved.</span>
+  </div>
+</footer>
+
+<button type="button" class="back-to-top" id="backToTop" aria-label="맨 위로 이동">
+  <i class="fa-solid fa-arrow-up"></i>
+</button>
+
+<script th:src="@{/js/register.js}"></script>
+</body>
+</html>

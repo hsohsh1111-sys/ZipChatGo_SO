@@ -37,11 +37,6 @@ from app.tools.transit_station import TransitStationSearchError, TransitStationT
 app = FastAPI(title="ZipChatGo AI Server")
 
 
-@app.get("/healthz")
-def health_check() -> dict[str, str]:
-    return {"status": "ok"}
-
-
 @app.post("/agent/test")
 def agent_test() -> dict[str, str]:
     return {"message": "hello"}

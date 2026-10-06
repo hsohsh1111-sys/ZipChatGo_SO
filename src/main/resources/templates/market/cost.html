@@ -1,23 +1,44 @@
 ﻿<!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>매매 비용 계산기 | 집찾GO</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-  <link rel="stylesheet" href="/static/css/common.css">
-  <link rel="stylesheet" href="/static/css/market-detail.css">
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/market-detail.css}">
 </head>
 <body>
   <header class="main-header" id="mainHeader">
-    <a href="/index.html" class="logo"><img src="/static/images/logo.png" alt="집찾GO"></a>
-    <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-controls="mobileNav" aria-expanded="false"><span></span><span></span><span></span></button>
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/logo.png}" alt="집찾GO">
+    </a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-controls="mobileNav" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <nav class="top-nav" id="mobileNav">
-      <a class="guest-menu" href="/templates/member/login.html"><i class="ti ti-login"></i>로그인</a>
-      <a class="guest-menu" href="/templates/member/signup.html"><i class="ti ti-user-plus"></i>회원가입</a>
-      <a href="/templates/support/contact.html"><i class="ti ti-headset"></i>고객센터</a>
-      <a class="user-menu" href="/favorites" th:href="@{/favorites}"><i class="ti ti-heart"></i>관심매물</a>
-      <a class="user-menu logout-btn" href="#"><i class="ti ti-logout"></i>로그아웃</a>
+      <a class="guest-menu" th:href="@{/member/login}">
+        <i class="ti ti-login"></i>
+        로그인
+      </a>
+      <a class="guest-menu" th:href="@{/member/signup}">
+        <i class="ti ti-user-plus"></i>
+        회원가입
+      </a>
+      <a th:href="@{/support/contact}">
+        <i class="ti ti-headset"></i>
+        고객센터
+      </a>
+      <a class="user-menu" th:href="@{/favorite}">
+        <i class="ti ti-heart"></i>
+        관심매물
+      </a>
+      <a class="user-menu logout-btn" href="#">
+        <i class="ti ti-logout"></i>
+        로그아웃
+      </a>
     </nav>
   </header>
 
@@ -101,24 +122,24 @@
 
     <nav class="sale-actions">
       <a href="/market/trend"><i class="ti ti-arrow-left"></i>목록으로 돌아가기</a>
-      <a href="/index.html"><i class="ti ti-home"></i>메인으로 이동</a>
+      <a th:href="@{/}"><i class="ti ti-home"></i>메인으로 이동</a>
     </nav>
   </main>
 
   <footer class="site-footer">
     <div class="footer-top">
       <div class="footer-brand">
-        <a href="/index.html"><img src="/static/images/logo.png" alt="집찾GO"></a>
+        <a th:href="@{/}"><img th:src="@{/images/logo.png}" alt="집찾GO"></a>
         <div>
           <h2>집찾GO</h2>
           <p>AI와 데이터로 나에게 맞는 집을 더 쉽고 빠르게 찾습니다.</p>
         </div>
       </div>
       <nav class="footer-links">
-        <a href="/index.html">메인</a>
+        <a th:href="@{/}">메인</a>
         <a href="/market/trend">부동산 분석</a>
-        <a href="/templates/property/local.html">회사 서비스</a>
-        <a href="/templates/support/contact.html">고객센터</a>
+        <a th:href="@{/about/service}">회사 서비스</a>
+        <a th:href="@{/support/contact}">고객센터</a>
       </nav>
     </div>
     <div class="footer-info">
@@ -134,7 +155,7 @@
       </div>
     </footer>
 
-  <script src="/static/js/cost.js"></script>
-  <script src="/static/js/common.js"></script>
+  <script th:src="@{/js/cost.js}"></script>
+  <script th:src="@{/js/common.js}"></script>
 </body>
 </html>

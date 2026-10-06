@@ -1,0 +1,174 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.springframework.boot",
+    "module": "spring-boot-starter-webservices",
+    "version": "4.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-webmvc",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-webservices",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "com.sun.xml.messaging.saaj",
+          "module": "saaj-impl",
+          "version": {
+            "requires": "3.0.6"
+          }
+        },
+        {
+          "group": "jakarta.xml.ws",
+          "module": "jakarta.xml.ws-api",
+          "version": {
+            "requires": "4.0.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-starter-webservices-4.1.1.jar",
+          "url": "spring-boot-starter-webservices-4.1.1.jar",
+          "size": 4748,
+          "sha512": "13acbdb8c9bdc36368939b80788b149db6f4d091d3b6cd033c3cae456305f7d29675f9caf43d2743c1ba4beb7a83ff9d6c2c8a5e6d99a444eacc0e149e05a626",
+          "sha256": "f4f089fae95849ce45fb560a8697a289219a9dc649fdd4da2796fabd1503eee9",
+          "sha1": "5a778c6e5723708a0afbf08c0ea3373b87013e34",
+          "md5": "c2741e2832ce627e53f70acfd58dcccc"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-starter-webmvc",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-webservices",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "com.sun.xml.messaging.saaj",
+          "module": "saaj-impl",
+          "version": {
+            "requires": "3.0.6"
+          }
+        },
+        {
+          "group": "jakarta.xml.ws",
+          "module": "jakarta.xml.ws-api",
+          "version": {
+            "requires": "4.0.3"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-starter-webservices-4.1.1.jar",
+          "url": "spring-boot-starter-webservices-4.1.1.jar",
+          "size": 4748,
+          "sha512": "13acbdb8c9bdc36368939b80788b149db6f4d091d3b6cd033c3cae456305f7d29675f9caf43d2743c1ba4beb7a83ff9d6c2c8a5e6d99a444eacc0e149e05a626",
+          "sha256": "f4f089fae95849ce45fb560a8697a289219a9dc649fdd4da2796fabd1503eee9",
+          "sha1": "5a778c6e5723708a0afbf08c0ea3373b87013e34",
+          "md5": "c2741e2832ce627e53f70acfd58dcccc"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-webservices-4.1.1-javadoc.jar",
+          "url": "spring-boot-starter-webservices-4.1.1-javadoc.jar",
+          "size": 4748,
+          "sha512": "13acbdb8c9bdc36368939b80788b149db6f4d091d3b6cd033c3cae456305f7d29675f9caf43d2743c1ba4beb7a83ff9d6c2c8a5e6d99a444eacc0e149e05a626",
+          "sha256": "f4f089fae95849ce45fb560a8697a289219a9dc649fdd4da2796fabd1503eee9",
+          "sha1": "5a778c6e5723708a0afbf08c0ea3373b87013e34",
+          "md5": "c2741e2832ce627e53f70acfd58dcccc"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-starter-webservices-4.1.1-sources.jar",
+          "url": "spring-boot-starter-webservices-4.1.1-sources.jar",
+          "size": 4748,
+          "sha512": "13acbdb8c9bdc36368939b80788b149db6f4d091d3b6cd033c3cae456305f7d29675f9caf43d2743c1ba4beb7a83ff9d6c2c8a5e6d99a444eacc0e149e05a626",
+          "sha256": "f4f089fae95849ce45fb560a8697a289219a9dc649fdd4da2796fabd1503eee9",
+          "sha1": "5a778c6e5723708a0afbf08c0ea3373b87013e34",
+          "md5": "c2741e2832ce627e53f70acfd58dcccc"
+        }
+      ]
+    }
+  ]
+}

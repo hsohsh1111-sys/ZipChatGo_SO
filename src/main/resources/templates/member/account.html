@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>계정 설정 | 집찾GO</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <style>
+      .account-page { max-width: 560px; margin: 120px auto 60px; padding: 0 20px; }
+      .account-card { background: #fff; border-radius: 20px; padding: 28px; margin-bottom: 20px;
+                      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06); }
+      .account-card h2 { margin: 0 0 16px; font-size: 20px; }
+      .account-row { display: flex; justify-content: space-between; padding: 10px 0;
+                     border-bottom: 1px solid #eef0f3; font-size: 15px; }
+      .account-row:last-child { border-bottom: none; }
+      .account-row span:first-child { color: #6b7280; }
+      .danger-desc { color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0 0 16px; }
+      .account-card label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+      .account-card input { width: 100%; box-sizing: border-box; padding: 12px 14px; font-size: 15px;
+                            border: 1px solid #d5d9e0; border-radius: 12px; margin-bottom: 14px; }
+      .withdraw-btn { width: 100%; padding: 14px; border: none; border-radius: 12px; cursor: pointer;
+                      background: #e5484d; color: #fff; font-size: 16px; font-weight: 700; }
+      .withdraw-btn:disabled { opacity: 0.6; cursor: default; }
+      .account-msg { color: #e5484d; font-size: 14px; min-height: 20px; margin: 0 0 10px; }
+    </style>
+  </head>
+  <body>
+    <header class="main-header" id="mainHeader">
+      <a th:href="@{/}" class="logo">
+        <img th:src="@{/images/logo.png}" alt="집찾GO">
+      </a>
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-controls="mobileNav" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="top-nav" id="mobileNav">
+        <a class="guest-menu" th:href="@{/member/login}"><i class="ti ti-login"></i> 로그인</a>
+        <a class="guest-menu" th:href="@{/member/signup}"><i class="ti ti-user-plus"></i> 회원가입</a>
+        <a th:href="@{/support/contact}"><i class="ti ti-headset"></i> 고객센터</a>
+        <a class="user-menu" th:href="@{/favorites}"><i class="ti ti-heart"></i> 관심매물</a>
+        <a class="user-menu logout-btn" href="#"><i class="ti ti-logout"></i> 로그아웃</a>
+      </nav>
+    </header>
+
+    <main class="account-page">
+      <section class="account-card">
+        <h2>내 계정</h2>
+        <div class="account-row"><span>이름</span><span id="accName">-</span></div>
+        <div class="account-row"><span>이메일</span><span id="accEmail">-</span></div>
+        <div class="account-row"><span>가입 방식</span><span id="accProvider">-</span></div>
+      </section>
+
+      <section class="account-card">
+        <h2>회원 탈퇴</h2>
+        <p class="danger-desc">
+          탈퇴하면 계정 정보와 관심매물, 문의 내역이 모두 삭제되며 복구할 수 없어요.
+        </p>
+        <label id="confirmLabel" for="confirmInput">비밀번호</label>
+        <input id="confirmInput" type="password" autocomplete="off">
+        <p class="account-msg" id="accMsg"></p>
+        <button class="withdraw-btn" id="withdrawBtn" type="button">회원 탈퇴</button>
+      </section>
+    </main>
+
+    <script th:src="@{/js/common.js}"></script>
+    <script>
+      (async function () {
+        var providerNames = { google: '구글', naver: '네이버', kakao: '카카오' };
+        var me;
+
+        try {
+          var res = await fetch('/api/auth/me');
+          me = await res.json();
+        } catch (e) {
+          me = { success: false, guest: false };
+        }
+
+        if (!me.success) {
+          if (me.guest) {
+            alert('게스트 체험 계정은 계정 설정을 사용할 수 없어요.');
+            location.href = '/';
+          } else {
+            location.href = '/login?redirect=' + encodeURIComponent('/account');
+          }
+          return;
+        }
+
+        document.getElementById('accName').textContent = me.name || '-';
+        document.getElementById('accEmail').textContent = me.email || '등록된 이메일 없음';
+        document.getElementById('accProvider').textContent =
+          me.social ? (providerNames[me.provider] || '소셜') + ' 로그인' : '이메일 가입';
+
+        var input = document.getElementById('confirmInput');
+        var label = document.getElementById('confirmLabel');
+        var msg = document.getElementById('accMsg');
+        var btn = document.getElementById('withdrawBtn');
+
+        if (me.social) {
+          label.textContent = "확인을 위해 '탈퇴'를 입력해주세요";
+          input.type = 'text';
+        }
+
+        btn.addEventListener('click', async function () {
+          msg.textContent = '';
+          var value = input.value.trim();
+
+          if (!value) {
+            msg.textContent = me.social ? "'탈퇴'를 입력해주세요." : '비밀번호를 입력해주세요.';
+            return;
+          }
+          if (!confirm('정말 탈퇴하시겠어요? 이 작업은 되돌릴 수 없어요.')) return;
+
+          btn.disabled = true;
+          try {
+            var r = await fetch('/api/auth/withdraw', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(me.social ? { confirmText: value } : { password: value })
+            });
+            var data = await r.json();
+
+            if (data.success) {
+              localStorage.removeItem('jipchatgoGuestMode');
+              alert('탈퇴가 완료되었어요. 그동안 이용해 주셔서 감사합니다.');
+              location.href = '/';
+              return;
+            }
+            msg.textContent = data.message || '탈퇴에 실패했어요. 잠시 후 다시 시도해주세요.';
+          } catch (e) {
+            msg.textContent = '서버와 통신하지 못했어요. 잠시 후 다시 시도해주세요.';
+          }
+          btn.disabled = false;
+        });
+      })();
+    </script>
+  </body>
+</html>

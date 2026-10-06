@@ -61,6 +61,15 @@ function initMobileMenu() {
 
 async function updateLoginMenu() {
   const logoutButtons = document.querySelectorAll(".logout-btn");
+
+  // 로그아웃 버튼 리스너는 서버 응답을 기다리지 않고 먼저 등록
+  logoutButtons.forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      handleLogout();
+    });
+  });
+
   const isGuest = localStorage.getItem("jipchatgoGuestMode") === "true";
 
   if (isGuest) {
@@ -71,33 +80,39 @@ async function updateLoginMenu() {
       const res = await fetch("/api/auth/check");
       const data = await res.json();
       document.body.classList.toggle("login-active", !!data.loggedIn);
+      if (data.loggedIn && !data.guest) addAccountMenu();
     } catch (err) {
       // 네트워크 오류 등으로 확인 자체가 안 되면 로그아웃 상태로 취급
       document.body.classList.remove("login-active");
     }
   }
-
-  logoutButtons.forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      handleLogout();
-    });
-  });
 }
 
 async function handleLogout() {
-  const wasGuest = localStorage.getItem("jipchatgoGuestMode") === "true";
   localStorage.removeItem("jipchatgoGuestMode");
 
-  if (!wasGuest) {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch (err) {
-      // 서버 로그아웃 요청이 실패해도, 클라이언트 쪽 상태는 로그아웃으로 처리하고 진행
-    }
+  // 게스트도 서버 세션(guest=true)이 있으므로 항상 서버 로그아웃 호출
+  try {
+    await fetch("/api/auth/logout", { method: "POST" });
+  } catch (err) {
+    // 서버 로그아웃 요청이 실패해도, 클라이언트 쪽 상태는 로그아웃으로 처리하고 진행
   }
 
   document.body.classList.remove("login-active");
   alert("로그아웃 되었습니다.");
   location.href = "/";
+}
+
+/* 회원(게스트 제외)에게만 "계정 설정" 메뉴를 로그아웃 버튼 앞에 추가 */
+function addAccountMenu() {
+  document.querySelectorAll(".logout-btn").forEach(btn => {
+    const prev = btn.previousElementSibling;
+    if (prev && prev.classList.contains("account-menu")) return;
+
+    const link = document.createElement("a");
+    link.className = "user-menu account-menu";
+    link.href = "/account";
+    link.innerHTML = '<i class="ti ti-user-cog"></i> 계정 설정';
+    btn.parentNode.insertBefore(link, btn);
+  });
 }

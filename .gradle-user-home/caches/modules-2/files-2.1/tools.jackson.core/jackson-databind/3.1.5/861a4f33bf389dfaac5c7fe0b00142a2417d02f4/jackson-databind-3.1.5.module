@@ -1,0 +1,149 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "tools.jackson.core",
+    "module": "jackson-databind",
+    "version": "3.1.5",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-annotations",
+          "version": {
+            "requires": "2.21"
+          }
+        },
+        {
+          "group": "tools.jackson.core",
+          "module": "jackson-core",
+          "version": {
+            "requires": "3.1.5"
+          }
+        },
+        {
+          "group": "tools.jackson",
+          "module": "jackson-bom",
+          "version": {
+            "requires": "3.1.5"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        }
+      ],
+      "files": [
+        {
+          "name": "jackson-databind-3.1.5.jar",
+          "url": "jackson-databind-3.1.5.jar",
+          "size": 1944003,
+          "sha512": "897ee93528010d2956908da5ea90c37dc9d6c37388bd1aa9da954c582a7bdf986a477f248d631d833c2bc281e0827782df978ecc76d5518a33e475aa9ddcb2d9",
+          "sha256": "3a2338d996fd3056791df8d335fa9ba8a62a706ed4245ecf81b3e583df37d08a",
+          "sha1": "782178f0b1fe088803c03b85eb9a406f60519044",
+          "md5": "7b399cbb2bea1429c46c1b8c73af42b9"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.fasterxml.jackson.core",
+          "module": "jackson-annotations",
+          "version": {
+            "requires": "2.21"
+          }
+        },
+        {
+          "group": "tools.jackson.core",
+          "module": "jackson-core",
+          "version": {
+            "requires": "3.1.5"
+          }
+        },
+        {
+          "group": "tools.jackson",
+          "module": "jackson-bom",
+          "version": {
+            "requires": "3.1.5"
+          },
+          "attributes": {
+            "org.gradle.category": "platform"
+          },
+          "endorseStrictVersions": true
+        }
+      ],
+      "files": [
+        {
+          "name": "jackson-databind-3.1.5.jar",
+          "url": "jackson-databind-3.1.5.jar",
+          "size": 1944003,
+          "sha512": "897ee93528010d2956908da5ea90c37dc9d6c37388bd1aa9da954c582a7bdf986a477f248d631d833c2bc281e0827782df978ecc76d5518a33e475aa9ddcb2d9",
+          "sha256": "3a2338d996fd3056791df8d335fa9ba8a62a706ed4245ecf81b3e583df37d08a",
+          "sha1": "782178f0b1fe088803c03b85eb9a406f60519044",
+          "md5": "7b399cbb2bea1429c46c1b8c73af42b9"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [],
+      "files": [
+        {
+          "name": "jackson-databind-3.1.5-javadoc.jar",
+          "url": "jackson-databind-3.1.5-javadoc.jar",
+          "size": 6657334,
+          "sha512": "89749807bb10cbb135f2a2b69af2e841cb69733c2328e7a6bc9b828cf468916d95e44f030808800b020c4ed4e24a00b92b6d535341dd8bf7fd340c865c7ede66",
+          "sha256": "9ffa5f9ce0f87c2e70951b5cca1c4249231749fe85195ec1faa2806ab6931620",
+          "sha1": "6415f6abc732da109c2a23060297090551ed3723",
+          "md5": "a39d48f8b9daf3d710c5c15590709653"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [],
+      "files": [
+        {
+          "name": "jackson-databind-3.1.5-sources.jar",
+          "url": "jackson-databind-3.1.5-sources.jar",
+          "size": 1345931,
+          "sha512": "f7683f9bb48f7bc66b1b101639f0cde0bdfe4a021bdd1e841cdd5238411499b6531db2789285f15a4ec93e2093fc4775ea239cc53dcb541a08bad019544fa54b",
+          "sha256": "9040ab36a4b8ff6a39b1e647558897ab4c8723c2df57fe7f76884d7fc9e0c220",
+          "sha1": "bb6c94185574dfadbadae28a934bed7127ab6b56",
+          "md5": "bf4aae288318ef605af300a8d481df36"
+        }
+      ]
+    }
+  ]
+}

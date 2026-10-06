@@ -15,6 +15,22 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = redirectTarget;
   }
 
+  // 소셜 로그인 실패 시 서버가 /login?oauthError=코드 로 보냄
+  const oauthError = params.get('oauthError');
+  if (oauthError) {
+    const oauthMessages = {
+      email_exists: '이미 같은 이메일로 가입된 계정이 있어서 가입할 수 없어요. 이메일과 비밀번호로 로그인해 주세요.',
+      invalid_user: '소셜 계정 정보를 가져오지 못했어요. 잠시 후 다시 시도해주세요.',
+      access_denied: '소셜 로그인이 취소됐어요.'
+    };
+    showToast(oauthMessages[oauthError] || '소셜 로그인에 실패했어요. 다시 시도해주세요.', 5000);
+
+    // 새로고침 시 토스트 반복 방지 (oauthError만 제거)
+    params.delete('oauthError');
+    const qs = params.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  }
+
   // 게스트 모드 표시용 플래그
   // 실제 서버 인증은 HttpSession이 담당한다.
   function setGuestMode() {
@@ -252,6 +268,49 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ---------- 휴대폰번호 3칸 입력 ---------- */
+  const phoneBoxes = ['suPhone1', 'suPhone2', 'suPhone3']
+    .map(id => document.getElementById(id));
+
+  if (phoneBoxes.every(Boolean)) {
+
+    phoneBoxes.forEach((box, i) => {
+
+      // 숫자만 허용 + 칸이 가득 차면 다음 칸으로 이동
+      box.addEventListener('input', () => {
+        box.value = box.value.replace(/[^0-9]/g, '');
+
+        if (box.value.length >= box.maxLength && i < phoneBoxes.length - 1) {
+          phoneBoxes[i + 1].focus();
+        }
+      });
+
+      // 빈 칸에서 Backspace 누르면 이전 칸으로 이동
+      box.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !box.value && i > 0) {
+          e.preventDefault();
+          const prev = phoneBoxes[i - 1];
+          prev.focus();
+          prev.value = prev.value.slice(0, -1);
+        }
+      });
+
+      // 전체 번호를 붙여넣으면 칸에 나눠 채움 (01012345678 / 010-1234-5678)
+      box.addEventListener('paste', (e) => {
+        const digits = (e.clipboardData || window.clipboardData)
+          .getData('text').replace(/[^0-9]/g, '').slice(0, 11);
+
+        if (digits.length <= box.maxLength) return; // 짧으면 기본 동작
+
+        e.preventDefault();
+        phoneBoxes[0].value = digits.slice(0, 3);
+        phoneBoxes[1].value = digits.slice(3, digits.length - 4);
+        phoneBoxes[2].value = digits.slice(-4);
+        phoneBoxes[2].focus();
+      });
+    });
+  }
+
   /* ---------- 이메일 유효성 검사 ---------- */
   function validateEmail(value) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -353,11 +412,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
       e.preventDefault();
 
+      const suName = document.getElementById('suName');
+      const suEmail = document.getElementById('suEmail');
+      const phoneValue = phoneBoxes.map(b => b.value.trim()).join('');
       const pw = document.getElementById('suPassword');
       const pwCheck = document.getElementById('suPasswordCheck');
 
       const requiredAgree =
         document.querySelectorAll('.agree-item[required]');
+
+      // 이름 / 이메일 형식 검사 (오류 문구 요소가 없어 토스트로 안내)
+      if (!suName.value.trim()) {
+        suName.classList.add('invalid');
+        showToast('이름을 입력해주세요.');
+        return;
+      }
+      suName.classList.remove('invalid');
+
+      if (!validateEmail(suEmail.value.trim())) {
+        suEmail.classList.add('invalid');
+        showToast('올바른 이메일 형식을 입력해주세요.');
+        return;
+      }
+      suEmail.classList.remove('invalid');
+
+      // 휴대폰은 선택: 하나라도 입력했다면 형식 확인
+      if (phoneValue && !/^01[0-9]{8,9}$/.test(phoneValue)) {
+        showToast('휴대폰번호 형식을 확인해주세요.');
+        phoneBoxes[0].focus();
+        return;
+      }
 
       let ok = true;
 
@@ -417,10 +501,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const suName = document.getElementById('suName');
-      const suEmail = document.getElementById('suEmail');
-      const suPhone = document.getElementById('suPhone');
-
       const submitBtn =
         signupForm.querySelector('button[type="submit"]');
 
@@ -435,10 +515,10 @@ document.addEventListener('DOMContentLoaded', () => {
           },
           body: JSON.stringify({
 
-            email: suEmail.value,
+            email: suEmail.value.trim(),
             password: pw.value,
-            name: suName.value,
-            phone: suPhone.value
+            name: suName.value.trim(),
+            phone: phoneValue
 
           })
         });
@@ -477,6 +557,40 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  /* ==================================================
+     소셜 로그인 (카카오/네이버/구글)
+     ================================================== */
+
+  document.querySelectorAll('.social-btn[data-provider]').forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+      // 공인중개사 소셜 가입은 지원하지 않음 (회원가입 폼에서만 해당)
+      const selectedType =
+        document.querySelector('input[name="memberType"]:checked');
+
+      if (
+        btn.closest('#signupForm') &&
+        selectedType &&
+        selectedType.value === 'broker'
+      ) {
+        showToast('공인중개사는 소셜 가입을 지원하지 않아요.');
+        return;
+      }
+
+      // 게스트 플래그 정리 (소셜 로그인은 서버 리다이렉트로 끝나므로 미리 제거)
+      localStorage.removeItem('jipchatgoGuestMode');
+
+      // "다른 계정으로 로그인" 체크 시 계정 선택/재로그인 요청
+      const switchBox = btn.closest('form')?.querySelector('.switch-account');
+      const switchParam = (switchBox && switchBox.checked) ? '&switchAccount=1' : '';
+
+      window.location.href =
+        '/oauth/start/' + btn.dataset.provider +
+        '?redirect=' + encodeURIComponent(redirectTarget) + switchParam;
+    });
+  });
 
   /* ==================================================
      게스트 체험 로그인
@@ -545,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ---------- 토스트 ---------- */
-  function showToast(message) {
+  function showToast(message, duration = 2400) {
 
     let toast = document.querySelector('.toast');
 
@@ -565,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showToast._t = setTimeout(() => {
       toast.classList.remove('show');
-    }, 2400);
+    }, duration);
   }
 
   /* ---------- Back to Top ---------- */

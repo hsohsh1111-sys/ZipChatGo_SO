@@ -1,0 +1,139 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.springframework.boot",
+    "module": "spring-boot-http-client",
+    "version": "4.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-web",
+          "version": {
+            "requires": "7.0.9"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-http-client-4.1.1.jar",
+          "url": "spring-boot-http-client-4.1.1.jar",
+          "size": 142672,
+          "sha512": "dccdd17b679053b42c3c4404cc26b8fda7471d34a19a5a5104d150629d40eda83deb5de79912a0c885194356969bbf6adcfb6753adfda81e1ad2c4960d989348",
+          "sha256": "a7bae90c3d39eb318fee764d8a18dfa4009d62a9b0d6843c3ce987f4c0ad606e",
+          "sha1": "c31d5f21585b16b3ba2eacc3b05d385e666649f8",
+          "md5": "4036d8dde57b0403833648a11c25a07f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-http-converter",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-web",
+          "version": {
+            "requires": "7.0.9"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-http-client-4.1.1.jar",
+          "url": "spring-boot-http-client-4.1.1.jar",
+          "size": 142672,
+          "sha512": "dccdd17b679053b42c3c4404cc26b8fda7471d34a19a5a5104d150629d40eda83deb5de79912a0c885194356969bbf6adcfb6753adfda81e1ad2c4960d989348",
+          "sha256": "a7bae90c3d39eb318fee764d8a18dfa4009d62a9b0d6843c3ce987f4c0ad606e",
+          "sha1": "c31d5f21585b16b3ba2eacc3b05d385e666649f8",
+          "md5": "4036d8dde57b0403833648a11c25a07f"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-http-client-4.1.1-javadoc.jar",
+          "url": "spring-boot-http-client-4.1.1-javadoc.jar",
+          "size": 298840,
+          "sha512": "d74debe4ae45ffad807f627cf9d2afd9c6b22d85b6767210329c86a1e983cc370303ccb69222d385a7562e596d01707a697e80701cf3380d34c36238c8318dad",
+          "sha256": "eccb318f405e94aa37f1a12bae2a3018fafda0cf67f71b41405e2106eb705bfb",
+          "sha1": "14b19ffa08e0d2bd4838b066e9476666ab6cf0ca",
+          "md5": "64ed37c2c823df084c8ec70c45f181f5"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-http-client-4.1.1-sources.jar",
+          "url": "spring-boot-http-client-4.1.1-sources.jar",
+          "size": 92037,
+          "sha512": "43f583c258f092dfd3d8f51cbe82d28cae1ed54af1507e8a561247d3b32216eddc320598f4d7446d7f9a2b9f09f95f5102d372343a5a9e7e6adab7f98d3cca13",
+          "sha256": "2ea3e9263e4073e9a2ca0717cd4412a1ece6429bd4ec825770c3a41a54e041bb",
+          "sha1": "f012dd2be748a2c55ba3062d944fa6735d0b958e",
+          "md5": "c2549cacb655bf6e77b2048183263c5f"
+        }
+      ]
+    }
+  ]
+}

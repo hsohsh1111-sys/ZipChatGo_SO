@@ -30,6 +30,12 @@ public class PageController {
         return "member/auth";
     }
 
+    // 계정 설정(탈퇴) - 비로그인/게스트 처리는 페이지 스크립트가 /api/auth/me 로 판단
+    @GetMapping("/account")
+    public String account() {
+        return "member/account";
+    }
+
     @GetMapping("/member/signup")
     public String signup(Model model) {
         model.addAttribute("defaultTab", "signup");
@@ -40,11 +46,6 @@ public class PageController {
     public String joinAlias(Model model) {
         model.addAttribute("defaultTab", "signup");
         return "member/auth";
-    }
-
-    @GetMapping("/favorite")
-    public String favorite() {
-        return "favorite/favorite";
     }
 
     // /property/map 은 map.MapPageController 로 이관됨(중복 정의 방지)
@@ -62,6 +63,56 @@ public class PageController {
     @GetMapping("/market/trend")
     public String marketTrend() {
         return "market/trend";
+    }
+
+    @GetMapping("/market/sale")
+    public String marketSale() {
+        return "market/sale";
+    }
+
+    @GetMapping("/market/jeonse")
+    public String marketJeonse() {
+        return "market/jeonse";
+    }
+
+    @GetMapping("/market/volume")
+    public String marketVolume() {
+        return "market/volume";
+    }
+
+    @GetMapping("/market/region")
+    public String marketRegion() {
+        return "market/region";
+    }
+
+    @GetMapping("/market/region-flow")
+    public String marketRegionFlow() {
+        return "market/region-flow";
+    }
+
+    @GetMapping("/market/rate")
+    public String marketRate() {
+        return "market/rate";
+    }
+
+    @GetMapping("/market/school")
+    public String marketSchool() {
+        return "market/school";
+    }
+
+    @GetMapping("/market/traffic")
+    public String marketTraffic() {
+        return "market/traffic";
+    }
+
+    @GetMapping("/market/cost")
+    public String marketCost() {
+        return "market/cost";
+    }
+
+    @GetMapping("/market/ai-report")
+    public String marketAiReport() {
+        return "market/ai-report";
     }
 
     // =========================

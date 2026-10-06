@@ -38,4 +38,9 @@ public class Member {
 
     @Column("broker_license")
     private String brokerLicense;
+
+    private String provider;
+
+    @Column("provider_id")
+    private String providerId;
 }

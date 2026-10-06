@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,13 +7,13 @@
       주택대출 금리 분석 | 집찾GO
     </title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-    <link rel="stylesheet" href="../../static/css/common.css">
-    <link rel="stylesheet" href="../../static/css/sale.css">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/sale.css}">
   </head>
   <body>
     <header class="main-header" id="mainHeader">
-      <a href="../../index.html" class="logo">
-        <img src="../../static/images/logo.png" alt="집찾GO">
+      <a th:href="@{/}" class="logo">
+        <img th:src="@{/images/logo.png}" alt="집찾GO">
       </a>
       <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-controls="mobileNav" aria-expanded="false">
         <span>
@@ -24,22 +24,22 @@
         </span>
       </button>
       <nav class="top-nav" id="mobileNav">
-        <a class="guest-menu" href="../../templates/member/login.html">
+        <a class="guest-menu" th:href="@{/member/login}">
           <i class="ti ti-login">
           </i>
           로그인
         </a>
-        <a class="guest-menu" href="../../templates/member/signup.html">
+        <a class="guest-menu" th:href="@{/member/signup}">
           <i class="ti ti-user-plus">
           </i>
           회원가입
         </a>
-        <a href="../../templates/support/contact.html">
+        <a th:href="@{/support/contact}">
           <i class="ti ti-headset">
           </i>
           고객센터
         </a>
-        <a class="user-menu" href="/favorites" th:href="@{/favorites}">
+        <a class="user-menu" th:href="@{/favorite}">
           <i class="ti ti-heart">
           </i>
           관심매물
@@ -371,7 +371,7 @@
           </i>
           목록으로 돌아가기
         </a>
-        <a href="../../index.html">
+        <a th:href="@{/}">
           <i class="ti ti-home">
           </i>
           메인으로 이동
@@ -381,8 +381,8 @@
     <footer class="site-footer">
       <div class="footer-top">
         <div class="footer-brand">
-          <a href="../../index.html">
-            <img src="../../static/images/logo.png" alt="집찾GO">
+          <a th:href="@{/}">
+            <img th:src="@{/images/logo.png}" alt="집찾GO">
           </a>
           <div>
             <h2>
@@ -394,13 +394,13 @@
           </div>
         </div>
         <nav class="footer-links">
-          <a href="../../index.html">
+          <a th:href="@{/}">
             메인
           </a>
           <a href="/market/trend">
             시장동향
           </a>
-          <a href="../../templates/support/contact.html">
+          <a th:href="@{/support/contact}">
             고객센터
           </a>
         </nav>
@@ -414,9 +414,9 @@
         </span>
       </div>
     </footer>
-    <script src="../../static/js/common.js">
+    <script th:src="@{/js/common.js}">
     </script>
-    <script src="../../static/js/rate.js">
+    <script th:src="@{/js/rate.js}">
     </script>
   </body>
 </html>

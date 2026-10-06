@@ -1,0 +1,160 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.springframework.boot",
+    "module": "spring-boot-webservices",
+    "version": "4.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-http-client",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-oxm",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework.ws",
+          "module": "spring-ws-core",
+          "version": {
+            "requires": "5.0.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-webservices-4.1.1.jar",
+          "url": "spring-boot-webservices-4.1.1.jar",
+          "size": 29300,
+          "sha512": "ae460b9a10e5f0e81732a7347351f65c5ab8b4ebeb5c95897cc9971c44576ee8a2f1236178bc4d7ec95319a9fca89cb13774267e7f431beddcd7e8bb265efec5",
+          "sha256": "ea083abc09fbe52bf75af0d10d1e3997928f3adae295b637a907ccfd1eea0af8",
+          "sha1": "876749c42ad9e88e3427ca505e6f901bf639446b",
+          "md5": "6084bae36c6b336dc4fb89afc0d1aa4f"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework.boot",
+          "module": "spring-boot-http-client",
+          "version": {
+            "requires": "4.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-oxm",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework.ws",
+          "module": "spring-ws-core",
+          "version": {
+            "requires": "5.0.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-boot-webservices-4.1.1.jar",
+          "url": "spring-boot-webservices-4.1.1.jar",
+          "size": 29300,
+          "sha512": "ae460b9a10e5f0e81732a7347351f65c5ab8b4ebeb5c95897cc9971c44576ee8a2f1236178bc4d7ec95319a9fca89cb13774267e7f431beddcd7e8bb265efec5",
+          "sha256": "ea083abc09fbe52bf75af0d10d1e3997928f3adae295b637a907ccfd1eea0af8",
+          "sha1": "876749c42ad9e88e3427ca505e6f901bf639446b",
+          "md5": "6084bae36c6b336dc4fb89afc0d1aa4f"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-webservices-4.1.1-javadoc.jar",
+          "url": "spring-boot-webservices-4.1.1-javadoc.jar",
+          "size": 141093,
+          "sha512": "4d3d533651296d6536a2d3998c1ea025a1b51391a24c4ac1f8e13a62358f8dfadae6305dc4e779e8aae6f439b605a40f766f5361b21fd5930e1c6b84d11a0f9f",
+          "sha256": "dda5c2add6ae55ff33b4f588c4de80b4d6abb53b2807b52c5bd36458d334dae6",
+          "sha1": "afcc2f573137fccf0c652130912ee3f23cc4910e",
+          "md5": "5e6f2d0a86b726924f0e5333557a9f60"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-boot-webservices-4.1.1-sources.jar",
+          "url": "spring-boot-webservices-4.1.1-sources.jar",
+          "size": 20368,
+          "sha512": "d3876b91e85b6c6f908f242485911d0028e6b9fde6ba9ae5f9e589d2719d4f0695fea6699710b5cf8497b9116fbd21c22bb7741eb75bd99416b967f5415c4786",
+          "sha256": "2b0a668ca3dd513cffc813149d76127dae012b0d6f16ba1c33c3b4e45977346a",
+          "sha1": "e771e7f10f5525254ca5e9b85808fc365e5171f7",
+          "md5": "5fb3cbe0fa446035871e168d101050b7"
+        }
+      ]
+    }
+  ]
+}

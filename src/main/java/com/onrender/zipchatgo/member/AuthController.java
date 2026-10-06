@@ -159,4 +159,65 @@ public class AuthController {
 
         return result;
     }
+
+    /**
+     * 내 계정 정보 (계정 설정 페이지용)
+     * 일반/소셜 회원만 성공, 게스트·비로그인은 success=false
+     */
+    @GetMapping("/me")
+    public Map<String, Object> me(HttpSession session) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        Object idObj = session.getAttribute(SESSION_KEY);
+        if (!(idObj instanceof Long memberId)) {
+            result.put("success", false);
+            result.put("guest", Boolean.TRUE.equals(session.getAttribute(GUEST_SESSION_KEY)));
+            return result;
+        }
+
+        try {
+            Member member = memberService.getMember(memberId);
+            result.put("success", true);
+            result.put("name", member.getName());
+            result.put("email", member.getEmail());
+            result.put("provider", member.getProvider());
+            result.put("social", member.getPassword() == null);
+        } catch (IllegalStateException e) {
+            result.put("success", false);
+            result.put("guest", false);
+        }
+
+        return result;
+    }
+
+    /**
+     * 회원 탈퇴 (완전 삭제)
+     * body: { "password": "...", "confirmText": "탈퇴" }
+     */
+    @PostMapping("/withdraw")
+    public Map<String, Object> withdraw(
+            @RequestBody Map<String, String> body,
+            HttpSession session) {
+
+        Map<String, Object> result = new HashMap<>();
+
+        Object idObj = session.getAttribute(SESSION_KEY);
+        if (!(idObj instanceof Long memberId)) {
+            result.put("success", false);
+            result.put("message", "회원 로그인 상태에서만 탈퇴할 수 있어요.");
+            return result;
+        }
+
+        try {
+            memberService.withdraw(memberId, body.get("password"), body.get("confirmText"));
+            session.invalidate();
+            result.put("success", true);
+        } catch (IllegalStateException e) {
+            result.put("success", false);
+            result.put("message", e.getMessage());
+        }
+
+        return result;
+    }
 }

@@ -9,7 +9,7 @@
 <link rel="stylesheet" th:href="@{/css/common.css}">
 <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
-<body th:attr="data-default-tab=${defaultTab}"></body>
+<body th:attr="data-default-tab=${defaultTab}">
 
 <header class="main-header" id="mainHeader">
   <a th:href="@{/}" class="logo">
@@ -85,10 +85,11 @@
         <div class="divider">또는</div>
 
         <div class="social-row">
-          <button type="button" class="social-btn kakao"><span class="dot">K</span>카카오</button>
-          <button type="button" class="social-btn naver"><span class="dot">N</span>네이버</button>
-          <button type="button" class="social-btn google"><span class="dot">G</span>Google</button>
+          <button type="button" class="social-btn kakao" data-provider="kakao"><span class="dot">K</span>카카오</button>
+          <button type="button" class="social-btn naver" data-provider="naver"><span class="dot">N</span>네이버</button>
+          <button type="button" class="social-btn google" data-provider="google"><span class="dot">G</span>Google</button>
         </div>
+        <label class="switch-account-row" style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;color:#666;cursor:pointer;"><input type="checkbox" class="switch-account"> 다른 계정으로 로그인</label>
 
         <button type="button" class="guest-btn"><i class="ti ti-user-circle"></i> 게스트로 체험하기</button>
         <p class="guest-note">로그인 없이 둘러볼 수 있는 시연용 계정이에요</p>
@@ -157,10 +158,19 @@
         </div>
 
         <div class="field">
-          <label for="suPhone">휴대폰번호</label>
-          <div class="input-group">
-            <i class="ti ti-phone leading"></i>
-            <input type="tel" id="suPhone" placeholder="010-0000-0000" autocomplete="tel">
+          <label for="suPhone1">휴대폰번호 (선택)</label>
+          <div class="phone-split">
+            <div class="input-group">
+              <input type="text" id="suPhone1" class="phone-box" inputmode="numeric" maxlength="3" placeholder="010" autocomplete="off">
+            </div>
+            <span class="phone-sep">-</span>
+            <div class="input-group">
+              <input type="text" id="suPhone2" class="phone-box" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+            </div>
+            <span class="phone-sep">-</span>
+            <div class="input-group">
+              <input type="text" id="suPhone3" class="phone-box" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off">
+            </div>
           </div>
         </div>
 
@@ -203,10 +213,11 @@
         <div class="divider">또는</div>
 
         <div class="social-row">
-          <button type="button" class="social-btn kakao"><span class="dot">K</span>카카오</button>
-          <button type="button" class="social-btn naver"><span class="dot">N</span>네이버</button>
-          <button type="button" class="social-btn google"><span class="dot">G</span>Google</button>
+          <button type="button" class="social-btn kakao" data-provider="kakao"><span class="dot">K</span>카카오</button>
+          <button type="button" class="social-btn naver" data-provider="naver"><span class="dot">N</span>네이버</button>
+          <button type="button" class="social-btn google" data-provider="google"><span class="dot">G</span>Google</button>
         </div>
+        <label class="switch-account-row" style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:13px;color:#666;cursor:pointer;"><input type="checkbox" class="switch-account"> 다른 계정으로 로그인</label>
 
         <button type="button" class="guest-btn"><i class="ti ti-user-circle"></i> 게스트로 체험하기</button>
         <p class="guest-note">로그인 없이 둘러볼 수 있는 시연용 계정이에요</p>

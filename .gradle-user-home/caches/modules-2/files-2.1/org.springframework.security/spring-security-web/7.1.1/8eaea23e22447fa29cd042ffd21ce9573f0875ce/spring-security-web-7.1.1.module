@@ -1,0 +1,202 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "org.springframework.security",
+    "module": "spring-security-web",
+    "version": "7.1.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.security",
+          "module": "spring-security-core",
+          "version": {
+            "requires": "7.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-core",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-aop",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-beans",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-context",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-expression",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-web",
+          "version": {
+            "requires": "7.0.9"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-security-web-7.1.1.jar",
+          "url": "spring-security-web-7.1.1.jar",
+          "size": 932968,
+          "sha512": "241558616200a61221a5519d3af2e54bff5f12e50a2663d7241ac0f11feb0d8f52ac16dccae3f40e9ae2f86eb615c591aa4114979c17c617719f2582923fd440",
+          "sha256": "dece134a2332c976a2c94ecf13f816c64e8ea7f2139795485afe655fba0408f3",
+          "sha1": "449685cf2be4029b1200f1d0860a15caa5c2d05b",
+          "md5": "cc76d1f39558ef5eeaee80997caac280"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.springframework.security",
+          "module": "spring-security-core",
+          "version": {
+            "requires": "7.1.1"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-core",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-aop",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-beans",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-context",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-expression",
+          "version": {
+            "requires": "7.0.9"
+          }
+        },
+        {
+          "group": "org.springframework",
+          "module": "spring-web",
+          "version": {
+            "requires": "7.0.9"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "spring-security-web-7.1.1.jar",
+          "url": "spring-security-web-7.1.1.jar",
+          "size": 932968,
+          "sha512": "241558616200a61221a5519d3af2e54bff5f12e50a2663d7241ac0f11feb0d8f52ac16dccae3f40e9ae2f86eb615c591aa4114979c17c617719f2582923fd440",
+          "sha256": "dece134a2332c976a2c94ecf13f816c64e8ea7f2139795485afe655fba0408f3",
+          "sha1": "449685cf2be4029b1200f1d0860a15caa5c2d05b",
+          "md5": "cc76d1f39558ef5eeaee80997caac280"
+        }
+      ]
+    },
+    {
+      "name": "javadocElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-security-web-7.1.1-javadoc.jar",
+          "url": "spring-security-web-7.1.1-javadoc.jar",
+          "size": 6135081,
+          "sha512": "5958c90f7ab4e073da50bd59581cb86a93e11d6ea082148139eae259bf3eaf7a2a27f4ab43a7e165a108e67b5fe2b652d7b9b0d9655a923c81ff74fff25db077",
+          "sha256": "b99ece3763eb16f5d0d5775158376f9f33ab4767153d26c697d0cc73e756140e",
+          "sha1": "32f122d86aaa06d6cd09b6e7006aae2c4fc12e05",
+          "md5": "f3bae1f68a26d940a50555c305c3369d"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "spring-security-web-7.1.1-sources.jar",
+          "url": "spring-security-web-7.1.1-sources.jar",
+          "size": 759015,
+          "sha512": "3db2065b4635cd18135e227da0e831eb6949d3a16c3fa028184b94fa6ed5701865b1500e58fec56e879e1515c6c98b193efc47700b7c4b2cc6ab1107cc655281",
+          "sha256": "eb520d0386c0119d903baa915dd6999c7361cbdd779b9b698e5a369b58fd6606",
+          "sha1": "9f96d9d3f7340a24955fbf45c67bd0134adbcc9b",
+          "md5": "fb2a6282b6a464101df98c8053c0fd5d"
+        }
+      ]
+    }
+  ]
+}

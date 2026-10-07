@@ -9,5 +9,6 @@ import tools.jackson.databind.annotation.JsonNaming;
 public record AiChatResponse(
         String message,
         List<AiUiAction> actions,
-        AiRecentContext recentContext) {
+        AiRecentContext recentContext,
+        String propertySearchMode) {
 }

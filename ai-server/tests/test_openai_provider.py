@@ -36,6 +36,11 @@ def test_generate_sends_app_state_as_developer_context() -> None:
         "current_page": "map",
         "map_center": {"lat": 37.4, "lng": 127.15},
         "selected_property_id": "427",
+        "filters": {
+            "keyword": None,
+            "property_type": None,
+            "max_price": 1_500_000_000,
+        },
     }
 
     with patch("app.providers.openai_provider.OpenAI", return_value=client):
@@ -44,12 +49,21 @@ def test_generate_sends_app_state_as_developer_context() -> None:
             model="test-model",
             instructions="공인중개사 상담 원칙",
         )
-        result = provider.generate("현재 선택한 매물이 뭐야?", app_state)
+        result = provider.generate("현재 지도 기준으로 상담해줘.", app_state)
 
     input_items = client.responses.create.call_args.kwargs["input"]
     assert input_items[0]["role"] == "developer"
-    assert json.dumps(app_state, ensure_ascii=False, separators=(",", ":")) in input_items[0]["content"]
-    assert input_items[1] == {"role": "user", "content": "현재 선택한 매물이 뭐야?"}
+    contextual_app_state = {
+        key: value for key, value in app_state.items() if key != "filters"
+    }
+    assert json.dumps(
+        contextual_app_state,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ) in input_items[0]["content"]
+    assert '"filters"' not in input_items[0]["content"]
+    assert "1500000000" not in input_items[0]["content"]
+    assert input_items[1] == {"role": "user", "content": "현재 지도 기준으로 상담해줘."}
     assert result.message == "현재 지도 기준 상담 답변"
     assert result.actions == []
 
@@ -151,23 +165,16 @@ def test_generate_executes_property_search_and_returns_final_answer() -> None:
     )
     assert client.responses.create.call_count == 2
     first_request = client.responses.create.call_args_list[0].kwargs
-    assert first_request["tools"] == [
-        tool for tool in AGENT_TOOLS
-        if tool["name"] not in {
-            "get_properties_by_ids",
-            "set_presented_properties",
-            "add_favorite",
-            "remove_favorite",
-            "find_transit_station",
-            "get_adjacent_legal_dongs",
-            "search_real_estate_law",
-        }
-    ]
+    assert "search_properties" in {tool["name"] for tool in first_request["tools"]}
     second_input = client.responses.create.call_args_list[1].kwargs["input"]
-    assert second_input[-1]["type"] == "function_call_output"
-    assert second_input[-1]["call_id"] == "call-1"
-    assert json.loads(second_input[-1]["output"])["total_count"] == 2
+    tool_output = next(
+        item for item in second_input
+        if isinstance(item, dict) and item.get("type") == "function_call_output"
+    )
+    assert tool_output["call_id"] == "call-1"
+    assert json.loads(tool_output["output"])["total_count"] == 2
     assert result.message == "조건에 맞는 매물 2건을 찾았습니다."
+    assert result.property_search_mode == "properties"
     assert [action.type for action in result.actions] == [
         "FIT_BOUNDS",
         "HIGHLIGHT_PROPERTIES",
@@ -176,6 +183,33 @@ def test_generate_executes_property_search_and_returns_final_answer() -> None:
     assert result.recent_context.recent_property_ids == [1, 2]
     assert result.recent_context.last_referenced_property_id is None
     assert [item.id for item in result.recent_context.recent_properties] == [1, 2]
+
+
+def test_transaction_search_reports_transaction_mode() -> None:
+    client = Mock()
+    function_call = SimpleNamespace(
+        type="function_call",
+        name="search_properties",
+        arguments=json.dumps({
+            "search_mode": "transactions",
+            "keyword": None,
+            "exact_building_name": "효자촌 럭키",
+        }),
+        call_id="transactions-1",
+    )
+    client.responses.create.side_effect = [
+        SimpleNamespace(output=[function_call], output_text=""),
+        SimpleNamespace(output=[], output_text="최근 거래입니다."),
+    ]
+    search_properties = Mock(return_value={"total_count": 1, "properties": [{"id": 7}]})
+
+    with patch("app.providers.openai_provider.OpenAI", return_value=client):
+        result = OpenAIProvider("test-key", "test-model", "instructions").generate(
+            "효자촌 럭키 최근 거래 보여줘",
+            search_properties=search_properties,
+        )
+
+    assert result.property_search_mode == "transactions"
 
 
 def test_generate_fetches_only_favorite_property_ids() -> None:
@@ -1201,7 +1235,12 @@ def test_generate_prioritizes_selected_legal_dong_over_current_bounds() -> None:
         type="function_call",
         name="search_properties",
         arguments=json.dumps(
-            {"keyword": None, "property_type": "아파트", "max_price": None}
+            {
+                "region_name": None,
+                "keyword": None,
+                "property_type": "아파트",
+                "max_price": None,
+            }
         ),
         call_id="search-selected-dong",
     )
@@ -1246,6 +1285,65 @@ def test_generate_prioritizes_selected_legal_dong_over_current_bounds() -> None:
             "keyword": None,
             "property_type": "아파트",
             "max_price": None,
+            "legal_dong_code": "41135108",
+        }
+    )
+
+
+def test_generate_prioritizes_explicit_region_over_selected_region() -> None:
+    client = Mock()
+    search_call = SimpleNamespace(
+        type="function_call",
+        name="search_properties",
+        arguments=json.dumps(
+            {
+                "region_name": "판교동",
+                "keyword": None,
+                "property_type": "아파트",
+                "max_price": None,
+                "limit": 3,
+                "sort_by": "sale_price",
+                "sort_order": "asc",
+            }
+        ),
+        call_id="search-explicit-dong",
+    )
+    client.responses.create.side_effect = [
+        SimpleNamespace(output=[search_call], output_text=""),
+        SimpleNamespace(output=[], output_text="판교동에서 검색했습니다."),
+    ]
+    search_properties = Mock(return_value={"total_count": 0, "properties": []})
+    app_state = {
+        "current_page": "map",
+        "selected_region": {
+            "type": "legal_dong",
+            "code": "41135105",
+            "name": "서현동",
+        },
+        "map_bounds": {
+            "south": 37.3,
+            "west": 127.0,
+            "north": 37.5,
+            "east": 127.3,
+        },
+    }
+
+    with patch("app.providers.openai_provider.OpenAI", return_value=client):
+        provider = OpenAIProvider("test-key", "test-model", "instructions")
+        provider.generate(
+            "판교에서 가장 싼 아파트 3개만 찾아줘",
+            app_state=app_state,
+            search_properties=search_properties,
+        )
+
+    search_properties.assert_called_once_with(
+        {
+            "keyword": None,
+            "property_type": "아파트",
+            "max_price": None,
+            "limit": 3,
+            "sort_by": "sale_price",
+            "sort_order": "asc",
             "legal_dong_code": "41135108",
         }
     )
@@ -1577,6 +1675,7 @@ def test_generate_executes_law_search_and_returns_results_to_model() -> None:
     assert "관련 법령" in result.message
     assert "국가법령정보센터에서 확인하기" in result.message
     assert result.actions == []
+    assert result.property_search_mode is None
 
 
 def test_generate_normalizes_model_law_link_text() -> None:

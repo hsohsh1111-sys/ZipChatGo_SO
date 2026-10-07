@@ -53,8 +53,22 @@
   <main class="map-page-main">
     <aside id="propertySidebar">
       <div class="search-box">
-        <input id="searchInput" type="text" placeholder="지역, 단지명, 주소 검색" />
-        <button id="searchBtn">검색</button>
+        <div class="search-input-wrap">
+          <input id="searchInput"
+                 type="text"
+                 placeholder="지역, 단지명, 주소 검색"
+                 autocomplete="off"
+                 aria-autocomplete="list"
+                 aria-controls="searchSuggestions"
+                 aria-expanded="false" />
+          <div id="searchSuggestions"
+               class="search-suggestions"
+               role="listbox"
+               aria-label="검색어 자동완성"
+               hidden></div>
+        </div>
+        <button id="searchBtn" class="search-action search-submit" type="button">검색</button>
+        <button id="searchResetBtn" class="search-action search-reset" type="button">초기화</button>
       </div>
 
       <div id="propertyListView" class="property-list-view">
@@ -71,21 +85,35 @@
           <span><b id="mobileResultCount">0</b>개</span>
         </div>
 
-        <div class="filter-box">
-          <select id="typeFilter">
-            <option value="">전체 유형</option>
-            <option value="아파트">아파트</option>
-            <option value="오피스텔">오피스텔</option>
-            <option value="빌라">빌라</option>
-          </select>
+        <div class="filter-box" id="propertyFilters">
+          <button class="filter-trigger"
+                  type="button"
+                  data-property-filter="maxPrice"
+                  aria-controls="propertyFilterPanel"
+                  aria-expanded="false">
+            <span id="maxPriceFilterLabel">가격</span>
+            <i class="ti ti-chevron-down" aria-hidden="true"></i>
+          </button>
+          <button class="filter-trigger"
+                  type="button"
+                  data-property-filter="areaRange"
+                  aria-controls="propertyFilterPanel"
+                  aria-expanded="false">
+            <span id="areaRangeFilterLabel">면적</span>
+            <i class="ti ti-chevron-down" aria-hidden="true"></i>
+          </button>
+          <button class="filter-trigger"
+                  type="button"
+                  data-property-filter="maxBuildingAge"
+                  aria-controls="propertyFilterPanel"
+                  aria-expanded="false">
+            <span id="maxBuildingAgeFilterLabel">준공년도</span>
+            <i class="ti ti-chevron-down" aria-hidden="true"></i>
+          </button>
 
-          <select id="priceFilter">
-            <option value="">전체 가격</option>
-            <option value="50000">5억 이하</option>
-            <option value="70000">7억 이하</option>
-            <option value="100000">10억 이하</option>
-            <option value="150000">15억 이하</option>
-          </select>
+          <div id="propertyFilterPanel" class="filter-panel" hidden>
+            <div id="propertyFilterGroups" class="filter-groups"></div>
+          </div>
         </div>
 
         <div class="result-header">
@@ -299,9 +327,9 @@
           <span class="ai-agent-brand-icon" data-ai-brand-icon aria-hidden="true"></span>
           <span>정자동에서 8억 이하 아파트를 추천해줘</span>
         </button>
-        <button type="button" data-ai-question="서현동에서 8억 이하 아파트를 추천해줘">
+        <button type="button" data-ai-question="서현동에서 15억 이하 아파트를 추천해줘">
           <span class="ai-agent-brand-icon" data-ai-brand-icon aria-hidden="true"></span>
-          <span>서현동에서 8억 이하 아파트를 추천해줘</span>
+          <span>서현동에서 15억 이하 아파트를 추천해줘</span>
         </button>
         <button type="button" data-ai-question="직장이 판교인 신혼부부를 위한 9억 이하 아파트를 추천해줘">
           <span class="ai-agent-brand-icon" data-ai-brand-icon aria-hidden="true"></span>

@@ -159,6 +159,20 @@ BUNDANG_LEGAL_DONG_NAME_VALUES = (
     "하산운동",
 )
 
+BUNDANG_LEGAL_DONG_CODE_BY_NAME = {
+    name: code
+    for name, code in zip(
+        BUNDANG_LEGAL_DONG_NAME_VALUES,
+        (
+            "41135101", "41135102", "41135103", "41135104", "41135105",
+            "41135106", "41135107", "41135108", "41135109", "41135110",
+            "41135111", "41135112", "41135113", "41135114", "41135115",
+            "41135116", "41135117", "41135118",
+        ),
+        strict=True,
+    )
+}
+
 
 BUNDANG_LEGAL_DONG_NAMES = Literal[
     "분당동",
@@ -211,6 +225,9 @@ class ChatResponse(BaseModel):
     message: str
     actions: list[UiAction] = Field(default_factory=list)
     recent_context: RecentContext = Field(default_factory=RecentContext)
+    property_search_mode: Literal[
+        "properties", "transactions", "selected_building_transactions"
+    ] | None = None
 
 
 class PropertySearchArguments(BaseModel):

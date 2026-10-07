@@ -1,0 +1,37 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - integrate-JongBeom-develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-ec2-integrate-jongbeom-develop
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64, zipchatgo-ec2]
+    timeout-minutes: 30
+
+    steps:
+      - name: Deploy on EC2
+        run: |
+          set -euo pipefail
+
+          cd /home/ubuntu/ZipChatGo_Real
+
+          git fetch origin
+          git switch integrate-JongBeom-develop
+          git pull --ff-only origin integrate-JongBeom-develop
+
+          docker compose build spring
+          docker compose build ai-server
+          docker compose up -d
+          docker compose ps
+
+          docker image prune -f

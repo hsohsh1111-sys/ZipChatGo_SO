@@ -19,6 +19,28 @@
     topNav.classList.toggle('active');
   });
 
+  // ---------- 수정 모드 (?edit=매물id) ----------
+  const editId = new URLSearchParams(location.search).get('edit');
+  const isEditMode = Boolean(editId);
+
+  const DOC_INPUTS = [
+    { id: 'ownershipDoc', type: 'OWNERSHIP' },
+    { id: 'buildingRegisterDoc', type: 'BUILDING_REGISTER' },
+    { id: 'landRegisterDoc', type: 'LAND_REGISTER' },
+    { id: 'sealCertificateDoc', type: 'SEAL_CERTIFICATE' }
+  ];
+  let existingDocs = {};   // 수정 모드: { 서류종류: [{id, originalName, url}] }
+  let removedDocIds = [];  // 수정 모드: 삭제하기로 표시한 기존 서류 id
+
+  // ---------- 헤더 "내 매물" 링크: 로그인한 회원(게스트 제외)에게만 표시 ----------
+  fetch('/api/auth/check')
+    .then(r => r.json())
+    .then(d => {
+      const link = document.getElementById('myPropertiesLink');
+      if (link && d.loggedIn && !d.guest) link.style.display = '';
+    })
+    .catch(() => {});
+
   // ---------- 칩(라디오/체크박스) 선택 UI ----------
   function bindChip(chip) {
     const input = chip.querySelector('input');
@@ -119,16 +141,20 @@
   let currentSchoolMatch = null; // 1단계에서 확정된 학군 매칭 결과 (모달에서도 재사용)
 
   // 카카오 SDK는 autoload=false로 불러왔기 때문에 직접 load()를 호출해줘야 해요.
+  let kakaoReady = Promise.resolve(false);
   if (typeof kakao !== 'undefined' && kakao.maps) {
-    kakao.maps.load(() => {
-      kakaoGeocoder = new kakao.maps.services.Geocoder();
+    kakaoReady = new Promise((resolve) => {
+      kakao.maps.load(() => {
+        kakaoGeocoder = new kakao.maps.services.Geocoder();
+        resolve(true);
+      });
     });
   } else {
     console.error('[카카오맵] SDK를 불러오지 못했어요. appkey와 도메인 등록을 확인해주세요.');
   }
 
   // 학군 데이터 로드 (분당구)
-  Promise.all([
+  const zonesReady = Promise.all([
     fetch('../../static/data/elementary_zones_bundang.json').then(r => r.json()).catch(() => []),
     fetch('../../static/data/middle_zones_bundang.json').then(r => r.json()).catch(() => []),
     fetch('../../static/data/high_zones_seongnam.json').then(r => r.json()).catch(() => [])
@@ -137,7 +163,7 @@
   });
 
   let transitData = { subway: [], bus: [] };
-  fetch('../../static/data/transit_points_bundang.json').then(r => r.json()).then(d => {
+  const transitReady = fetch('../../static/data/transit_points_bundang.json').then(r => r.json()).then(d => {
     transitData = d;
   }).catch(() => {});
 
@@ -532,38 +558,54 @@
   const flyerPhotoDots = document.getElementById('flyerPhotoDots');
   const PHOTO_MAX = 10;
   let photos = [];
+  let existingPhotos = [];   // 수정 모드: 이미 저장된 사진 [{id, url}]
+  let removedPhotoIds = [];  // 수정 모드: 삭제하기로 표시한 기존 사진 id
   let flyerPhotoIndex = 0;
 
   photoInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files).slice(0, PHOTO_MAX - photos.length);
+    const files = Array.from(e.target.files).slice(0, PHOTO_MAX - existingPhotos.length - photos.length);
     files.forEach(file => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         photos.push({ file, src: ev.target.result });
-        flyerPhotoIndex = photos.length - 1; // 방금 올린 사진을 바로 보여줘요
+        flyerPhotoIndex = existingPhotos.length + photos.length - 1; // 방금 올린 사진을 바로 보여줘요
         renderThumbs();
       };
       reader.readAsDataURL(file);
     });
   });
 
+  // 기존 사진(수정 모드) + 새로 고른 사진을 합친 미리보기 주소 목록
+  function allPhotoSrcs() {
+    return existingPhotos.map(p => p.url || '').concat(photos.map(p => p.src));
+  }
+
   function renderThumbs() {
     thumbGrid.innerHTML = '';
-    photos.forEach((p, i) => {
+    const items = existingPhotos.map(p => ({ kind: 'old', key: p.id, src: p.url || '' }))
+      .concat(photos.map((p, i) => ({ kind: 'new', key: i, src: p.src })));
+
+    items.forEach((it, i) => {
       const div = document.createElement('div');
       div.className = 'thumb' + (i === 0 ? ' main' : '');
       div.innerHTML = `
-        <img src="${p.src}" alt="매물 사진 ${i + 1}">
+        <img src="${it.src}" alt="매물 사진 ${i + 1}">
         ${i === 0 ? '<span class="main-tag">대표</span>' : ''}
-        <button type="button" class="thumb-remove" data-index="${i}" aria-label="사진 삭제"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" class="thumb-remove" data-kind="${it.kind}" data-key="${it.key}" aria-label="사진 삭제"><i class="fa-solid fa-xmark"></i></button>
       `;
       thumbGrid.appendChild(div);
     });
     thumbGrid.querySelectorAll('.thumb-remove').forEach(btn => {
       btn.addEventListener('click', () => {
-        const i = Number(btn.dataset.index);
-        photos.splice(i, 1);
-        if (flyerPhotoIndex >= photos.length) flyerPhotoIndex = Math.max(0, photos.length - 1);
+        const key = Number(btn.dataset.key);
+        if (btn.dataset.kind === 'old') {
+          existingPhotos = existingPhotos.filter(p => p.id !== key);
+          removedPhotoIds.push(key); // 실제 삭제는 '수정 완료'를 눌렀을 때 반영돼요
+        } else {
+          photos.splice(key, 1);
+        }
+        const total = existingPhotos.length + photos.length;
+        if (flyerPhotoIndex >= total) flyerPhotoIndex = Math.max(0, total - 1);
         renderThumbs();
       });
     });
@@ -571,31 +613,34 @@
   }
 
   function renderFlyerPhotoCarousel() {
-    const hasPhotos = photos.length > 0;
-    if (flyerPhotoIndex > photos.length - 1) flyerPhotoIndex = Math.max(0, photos.length - 1);
+    const srcs = allPhotoSrcs();
+    const hasPhotos = srcs.length > 0;
+    if (flyerPhotoIndex > srcs.length - 1) flyerPhotoIndex = Math.max(0, srcs.length - 1);
 
-    flyerPhoto.style.backgroundImage = hasPhotos ? `url(${photos[flyerPhotoIndex].src})` : '';
+    flyerPhoto.style.backgroundImage = hasPhotos && srcs[flyerPhotoIndex] ? `url("${srcs[flyerPhotoIndex]}")` : '';
     flyerPhoto.classList.toggle('has-photo', hasPhotos);
     flyerPhotoHint.style.display = hasPhotos ? 'none' : '';
 
-    const showNav = photos.length > 1;
+    const showNav = srcs.length > 1;
     flyerPhotoPrev.style.display = showNav ? '' : 'none';
     flyerPhotoNext.style.display = showNav ? '' : 'none';
     flyerPhotoDots.innerHTML = showNav
-      ? photos.map((_, i) => `<span class="${i === flyerPhotoIndex ? 'active' : ''}"></span>`).join('')
+      ? srcs.map((_, i) => `<span class="${i === flyerPhotoIndex ? 'active' : ''}"></span>`).join('')
       : '';
   }
 
   flyerPhotoPrev.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!photos.length) return;
-    flyerPhotoIndex = (flyerPhotoIndex - 1 + photos.length) % photos.length;
+    const n = allPhotoSrcs().length;
+    if (!n) return;
+    flyerPhotoIndex = (flyerPhotoIndex - 1 + n) % n;
     renderFlyerPhotoCarousel();
   });
   flyerPhotoNext.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!photos.length) return;
-    flyerPhotoIndex = (flyerPhotoIndex + 1) % photos.length;
+    const n = allPhotoSrcs().length;
+    if (!n) return;
+    flyerPhotoIndex = (flyerPhotoIndex + 1) % n;
     renderFlyerPhotoCarousel();
   });
 
@@ -880,57 +925,71 @@
 
     submitBtn.disabled = true;
     const originalBtnText = submitBtn.textContent;
-    submitBtn.textContent = '등록 중...';
+    submitBtn.textContent = isEditMode ? '저장 중...' : '등록 중...';
 
     try {
-      const res = await fetch('/api/properties', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const res = await fetch(
+        isEditMode ? `/api/my/properties/${encodeURIComponent(editId)}` : '/api/properties',
+        {
+          method: isEditMode ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }
+      );
       const data = await res.json();
 
       if (!data.success) {
-        alert(data.message || '매물 등록에 실패했어요.');
+        alert(data.message || (isEditMode ? '매물 수정에 실패했어요.' : '매물 등록에 실패했어요.'));
         submitBtn.disabled = false;
         submitBtn.textContent = originalBtnText;
         return;
       }
 
-      const propertyId = data.propertyId;
+      const propertyId = isEditMode ? Number(editId) : data.propertyId;
 
-      // 첨부한 서류가 있으면 순서대로 업로드 (실패해도 등록 자체는 이미 완료된 상태라 계속 진행)
-      const docInputs = [
-        { id: 'ownershipDoc', type: 'OWNERSHIP' },
-        { id: 'buildingRegisterDoc', type: 'BUILDING_REGISTER' },
-        { id: 'landRegisterDoc', type: 'LAND_REGISTER' },
-        { id: 'sealCertificateDoc', type: 'SEAL_CERTIFICATE' }
-      ];
+      // 수정 모드: 삭제하기로 표시한 기존 사진 정리
+      if (isEditMode) {
+        for (const photoId of removedPhotoIds) {
+          await deleteMyItem(propertyId, 'photos', photoId);
+        }
+      }
 
-      for (const doc of docInputs) {
+      // 서류: 새 파일을 올리면 기존 파일을 교체, 삭제 표시한 기존 파일은 삭제
+      // (실패해도 매물 저장 자체는 이미 완료된 상태라 계속 진행)
+      for (const doc of DOC_INPUTS) {
         const input = document.getElementById(doc.id);
-        if (input && input.files && input.files[0]) {
-          const formData = new FormData();
-          formData.append('docType', doc.type);
-          formData.append('file', input.files[0]);
-          try {
-            await fetch(`/api/properties/${propertyId}/documents`, { method: 'POST', body: formData });
-          } catch (err) {
-            console.error('서류 업로드 실패:', doc.type, err);
+        const file = input && input.files && input.files[0];
+        const olds = isEditMode ? (existingDocs[doc.type] || []) : [];
+
+        if (file) {
+          const uploaded = await uploadDoc(propertyId, doc.type, file);
+          if (uploaded) {
+            for (const old of olds) await deleteMyItem(propertyId, 'documents', old.id);
+          }
+        } else {
+          for (const old of olds) {
+            if (removedDocIds.includes(old.id)) await deleteMyItem(propertyId, 'documents', old.id);
           }
         }
       }
 
-      // 사진 업로드 (STEP3에서 선택한 것들, 0번이 대표 사진)
+      // 사진 업로드 (새로 고른 것들, 기존 사진 뒤에 이어 붙임. 등록 모드에서는 0번이 대표 사진)
+      const photoStartOrder = isEditMode ? existingPhotos.length : 0;
       for (let i = 0; i < photos.length; i++) {
         const formData = new FormData();
         formData.append('file', photos[i].file);
-        formData.append('sortOrder', String(i));
+        formData.append('sortOrder', String(photoStartOrder + i));
         try {
           await fetch(`/api/properties/${propertyId}/photos`, { method: 'POST', body: formData });
         } catch (err) {
           console.error('사진 업로드 실패:', i, err);
         }
+      }
+
+      if (isEditMode) {
+        alert('수정 내용이 저장됐어요. 담당자가 다시 확인한 뒤 게시돼요.');
+        window.location.href = `/my/properties/${propertyId}`;
+        return;
       }
 
       let message = '매물 등록 신청이 접수됐어요. 담당자 확인 후 24시간 이내 게시돼요.';
@@ -992,13 +1051,209 @@
   }
 
 /* ----------------------------------------------------------
-   서류 선택 시 파일명 표시 (기존 대형 스크립트와 독립적으로 동작)
+   서류 업로드/삭제 도우미
    ---------------------------------------------------------- */
-  document.querySelectorAll('input[type="file"][data-doc-type]').forEach((input) => {
-    input.addEventListener('change', (e) => {
-      const hint = document.querySelector(`[data-doc-hint="${input.id}"]`);
-      if (!hint) return;
-      const file = e.target.files[0];
-      hint.textContent = file ? `선택됨: ${file.name}` : '선택한 파일이 없어요.';
-    });
+  async function uploadDoc(propertyId, type, file) {
+    const formData = new FormData();
+    formData.append('docType', type);
+    formData.append('file', file);
+    try {
+      const r = await fetch(`/api/properties/${propertyId}/documents`, { method: 'POST', body: formData });
+      const d = await r.json();
+      return Boolean(d && d.success);
+    } catch (err) {
+      console.error('서류 업로드 실패:', type, err);
+      return false;
+    }
+  }
+
+  // 수정 모드: 내 매물의 사진/서류 한 건 삭제 (kind: 'photos' | 'documents')
+  async function deleteMyItem(propertyId, kind, itemId) {
+    try {
+      await fetch(`/api/my/properties/${propertyId}/${kind}/${itemId}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('삭제 실패:', kind, itemId, err);
+    }
+  }
+
+/* ----------------------------------------------------------
+   서류 선택 시 안내 문구 (수정 모드에서는 기존 파일도 함께 표시)
+   ---------------------------------------------------------- */
+  function escHtml(v) {
+    return String(v == null ? '' : v)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  const DOC_ACTION_STYLE = 'margin-left:8px;padding:2px 10px;border:1px solid #d5d9e0;border-radius:8px;background:#fff;cursor:pointer;font-size:12px';
+
+  function renderDocHint(item) {
+    const input = document.getElementById(item.id);
+    const hint = document.querySelector(`[data-doc-hint="${item.id}"]`);
+    if (!input || !hint) return;
+
+    const file = input.files && input.files[0];
+    const olds = existingDocs[item.type] || [];
+    const kept = olds.filter(d => !removedDocIds.includes(d.id));
+
+    if (file) {
+      hint.textContent = `선택됨: ${file.name}` + (olds.length ? ' (기존 파일은 교체돼요)' : '');
+    } else if (kept.length) {
+      hint.innerHTML = '현재 파일: ' + kept.map(d => d.url
+        ? `<a href="${escHtml(d.url)}" target="_blank" rel="noopener noreferrer">${escHtml(d.originalName)}</a>`
+        : escHtml(d.originalName)).join(', ') +
+        `<button type="button" class="doc-action" data-act="remove" style="${DOC_ACTION_STYLE}">삭제</button>`;
+    } else if (olds.length) {
+      hint.innerHTML = '삭제 예정이에요 (수정 완료 시 반영돼요)' +
+        `<button type="button" class="doc-action" data-act="undo" style="${DOC_ACTION_STYLE}">되돌리기</button>`;
+    } else {
+      hint.textContent = '선택한 파일이 없어요.';
+    }
+  }
+
+  DOC_INPUTS.forEach((item) => {
+    const input = document.getElementById(item.id);
+    const hint = document.querySelector(`[data-doc-hint="${item.id}"]`);
+    if (input) input.addEventListener('change', () => renderDocHint(item));
+    if (hint) {
+      hint.addEventListener('click', (e) => {
+        const btn = e.target.closest('.doc-action');
+        if (!btn) return;
+        const ids = (existingDocs[item.type] || []).map(d => d.id);
+        if (btn.dataset.act === 'remove') {
+          removedDocIds = removedDocIds.concat(ids.filter(id => !removedDocIds.includes(id)));
+        } else {
+          removedDocIds = removedDocIds.filter(id => !ids.includes(id));
+        }
+        renderDocHint(item);
+      });
+    }
   });
+
+/* ----------------------------------------------------------
+   수정 모드: 저장된 매물 불러와서 폼에 채우기
+   ---------------------------------------------------------- */
+  function formatPhoneDisplay(v) {
+    const d = String(v || '').replace(/[^0-9]/g, '');
+    if (d.length === 11) return d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7);
+    if (d.length === 10) return d.slice(0, 3) + '-' + d.slice(3, 6) + '-' + d.slice(6);
+    return v || '';
+  }
+
+  function clickChip(name, value) {
+    const input = Array.from(document.querySelectorAll(`input[name="${name}"]`)).find(i => i.value === value);
+    if (input) input.closest('.chip').click();
+  }
+
+  // 체크박스 칩 채우기: 기본 칩에 있으면 선택, 없으면 직접추가 칩으로 만든다
+  function applyChecks(gridId, values, customInputId, customBtnId) {
+    const grid = document.getElementById(gridId);
+    (values || []).forEach(v => {
+      const existing = Array.from(grid.querySelectorAll('input')).find(i => i.value === v);
+      if (existing) {
+        if (!existing.checked) existing.closest('.chip').click();
+      } else if (customInputId) {
+        document.getElementById(customInputId).value = v;
+        document.getElementById(customBtnId).click();
+      }
+    });
+  }
+
+  function setVal(id, v) {
+    const el = document.getElementById(id);
+    if (el && v != null) el.value = v;
+  }
+
+  // 가격 칸은 입력 이벤트를 발생시켜 콤마/억·만원 힌트가 함께 갱신되게 한다
+  function setPrice(id, v) {
+    const el = document.getElementById(id);
+    if (!el || v == null) return;
+    el.value = String(v);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  async function fillForm(p) {
+    clickChip('propertyType', p.propertyType);
+    clickChip('dealType', p.dealType);
+
+    setVal('addr1', p.address1);
+    setVal('addr2', p.address2);
+    setVal('area', p.area);
+    setVal('floor', p.floorInfo);
+    setVal('rooms', p.rooms);
+    setVal('baths', p.baths);
+    setVal('maintenanceFee', p.maintenanceFee);
+    setVal('etcFee', p.etcFee);
+    setPrice('price', p.price);
+    setPrice('deposit', p.deposit);
+    setPrice('monthly', p.monthly);
+    setVal('ownerName', p.ownerName);
+    setVal('ownerPhone', formatPhoneDisplay(p.ownerPhone));
+
+    applyChecks('tagGrid', p.tags, 'customTagInput', 'customTagAdd');
+    applyChecks('optionGrid', p.options, 'customOptionInput', 'customOptionAdd');
+    applyChecks('utilityGroup', p.utilities);
+
+    // 사진
+    existingPhotos = (p.photos || []).map(ph => ({ id: ph.id, url: ph.url }));
+    flyerPhotoIndex = 0;
+    renderThumbs();
+
+    // 서류
+    existingDocs = {};
+    (p.documents || []).forEach(d => {
+      (existingDocs[d.docType] = existingDocs[d.docType] || []).push(d);
+    });
+    DOC_INPUTS.forEach(renderDocHint);
+
+    updatePreview();
+
+    // 위치: 저장된 좌표로 지도/학군/교통을 다시 표시 (지도 SDK와 데이터가 준비된 뒤)
+    if (p.latitude != null && p.longitude != null) {
+      const mapOk = await Promise.all([kakaoReady, zonesReady, transitReady]).then(r => r[0]).catch(() => false);
+      if (mapOk) {
+        applyGeocodedLocation(p.address1, p.longitude, p.latitude);
+      } else {
+        currentLat = p.latitude;
+        currentLng = p.longitude;
+      }
+    }
+  }
+
+  async function initEditMode() {
+    document.title = '매물 수정 | 집찾GO';
+
+    const eyebrow = document.querySelector('.reg-hero .eyebrow');
+    if (eyebrow) eyebrow.textContent = '매물 수정';
+    const h1 = document.querySelector('.reg-hero h1');
+    if (h1) h1.innerHTML = '등록한 매물 정보를<br>수정해주세요';
+    const sub = document.querySelector('.reg-hero .hero-sub');
+    if (sub) sub.textContent = '수정을 완료하면 담당자가 다시 확인한 뒤 게시돼요.';
+    document.querySelectorAll('.reg-hero .hero-badges, .benefits, .faq, .final-cta')
+      .forEach(el => { el.style.display = 'none'; });
+    submitBtn.textContent = '수정 완료';
+
+    let data;
+    try {
+      const res = await fetch('/api/my/properties/' + encodeURIComponent(editId));
+      data = await res.json();
+    } catch (err) {
+      alert('서버와 통신하지 못했어요. 잠시 후 다시 시도해주세요.');
+      location.href = '/my/properties';
+      return;
+    }
+
+    if (!data.success) {
+      if (data.message === '로그인이 필요합니다.') {
+        location.href = '/login?redirect=' + encodeURIComponent(location.pathname + location.search);
+      } else {
+        alert(data.message || '매물을 불러오지 못했어요.');
+        location.href = '/my/properties';
+      }
+      return;
+    }
+
+    await fillForm(data.property);
+  }
+
+  if (isEditMode) initEditMode();

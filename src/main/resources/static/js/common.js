@@ -103,16 +103,24 @@ async function handleLogout() {
   location.href = "/";
 }
 
-/* 회원(게스트 제외)에게만 "계정 설정" 메뉴를 로그아웃 버튼 앞에 추가 */
+/* 회원(게스트 제외)에게만 "내 매물", "계정 설정" 메뉴를 로그아웃 버튼 앞에 추가 */
 function addAccountMenu() {
   document.querySelectorAll(".logout-btn").forEach(btn => {
     const prev = btn.previousElementSibling;
     if (prev && prev.classList.contains("account-menu")) return;
 
+    const myLink = document.createElement("a");
+    myLink.className = "user-menu my-property-menu";
+    myLink.href = "/my/properties";
+    myLink.innerHTML = '<i class="ti ti-building-estate"></i> 내 매물';
+    if (location.pathname.indexOf("/my/properties") === 0) myLink.classList.add("is-current");
+    btn.parentNode.insertBefore(myLink, btn);
+
     const link = document.createElement("a");
     link.className = "user-menu account-menu";
     link.href = "/account";
     link.innerHTML = '<i class="ti ti-user-cog"></i> 계정 설정';
+    if (location.pathname === "/account") link.classList.add("is-current");
     btn.parentNode.insertBefore(link, btn);
   });
 }

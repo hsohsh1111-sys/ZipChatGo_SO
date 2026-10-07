@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from pydantic import BaseModel, Field
 
@@ -13,6 +13,9 @@ class AgentReply(BaseModel):
     message: str
     actions: list[UiAction] = Field(default_factory=list)
     recent_context: RecentContext = Field(default_factory=RecentContext)
+    property_search_mode: Literal[
+        "properties", "transactions", "selected_building_transactions"
+    ] | None = None
 
 
 class LLMProvider(Protocol):

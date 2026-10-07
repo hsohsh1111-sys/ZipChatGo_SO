@@ -87,6 +87,15 @@ public class MapDataService {
               FROM poi
              ORDER BY poi_id
             """;
+    private static final String POIS_BY_CATEGORY_SQL = """
+            SELECT poi_id, source_type, name, category, subcategory,
+                   road_address, province, city, town, latitude, longitude,
+                   bus_routes, business_status, representative_name,
+                   registration_number
+              FROM poi
+             WHERE category = ?
+             ORDER BY poi_id
+            """;
 
     private static final String PRICE_HISTORY_SQL = """
             SELECT DATE_FORMAT(p.contract_date, '%Y-%m') AS month,
@@ -117,7 +126,6 @@ public class MapDataService {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
     private final List<Map<String, Object>> fallbackProperties;
-    private final List<Map<String, Object>> fallbackPois;
     private final List<Map<String, Object>> transitStations;
     private final Map<String, Path2D.Double> legalDongPolygons;
 
@@ -125,7 +133,6 @@ public class MapDataService {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
         this.fallbackProperties = readFallback(PROPERTIES_RESOURCE);
-        this.fallbackPois = readFallback(POIS_RESOURCE);
         this.transitStations = readTransitStations();
         this.legalDongPolygons = readLegalDongPolygons();
     }
@@ -135,12 +142,26 @@ public class MapDataService {
     }
 
     public MapDataResult getPois() {
-        return queryOrFallback("poi", POIS_SQL, fallbackPois);
+        return queryPoisOrFallback(null);
+    }
+
+    public MapDataResult getPois(String category) {
+        return category == null || category.isBlank()
+                ? getPois()
+                : queryPoisOrFallback(category);
     }
 
     public MapDataResult getMapPois() {
         MapDataResult result = getPois();
         return new MapDataResult(searchablePois(result.data()), result.source());
+    }
+
+    public MapDataResult getMapPois(String category) {
+        MapDataResult result = getPois(category);
+        List<Map<String, Object>> pois = searchablePois(result.data()).stream()
+                .filter(poi -> category.equals(poi.get("category")))
+                .toList();
+        return new MapDataResult(pois, result.source());
     }
 
     public PoiSearchResult searchPois(
@@ -405,6 +426,28 @@ public class MapDataService {
         LocalDate startDate = LocalDate.now().minusYears(years).withDayOfMonth(1);
 
         return jdbcTemplate.queryForList(PRICE_HISTORY_SQL, propertyId, startDate);
+    }
+
+    private MapDataResult queryPoisOrFallback(String category) {
+        try {
+            List<Map<String, Object>> data = category == null
+                    ? jdbcTemplate.query(POIS_SQL, this::mapRow)
+                    : jdbcTemplate.query(POIS_BY_CATEGORY_SQL, this::mapRow, category);
+            log.info("TiDB poi 데이터 {}건을 조회했습니다.", data.size());
+            return new MapDataResult(data, MapDataSource.TIDB);
+        } catch (DataAccessException exception) {
+            List<Map<String, Object>> fallbackData = readFallback(POIS_RESOURCE);
+            if (category != null) {
+                fallbackData = fallbackData.stream()
+                        .filter(poi -> category.equals(poi.get("category")))
+                        .toList();
+            }
+            log.error(
+                    "TiDB poi 데이터 조회에 실패해 샘플 JSON {}건을 사용합니다.",
+                    fallbackData.size(),
+                    exception);
+            return new MapDataResult(fallbackData, MapDataSource.FALLBACK_JSON);
+        }
     }
 
     private MapDataResult queryOrFallback(

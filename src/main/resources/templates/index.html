@@ -76,8 +76,8 @@
           <div class="ai-search-box">
             <i class="ti ti-message-chatbot">
             </i>
-            <input type="text" aria-label="AI에게 첫 메시지 보내기" placeholder="어떤 집을 찾고 있나요?">
-            <button type="button">
+            <input id="mainAiQuestion" type="text" aria-label="AI에게 첫 메시지 보내기" placeholder="어떤 집을 찾고 있나요?">
+            <button id="mainAiStart" type="button">
               대화 시작
               <i class="ti ti-arrow-up-right">
               </i>
@@ -85,19 +85,19 @@
           </div>
           <div class="quick-tags">
             <button type="button">
-              예산부터 정하고 싶어
+              정자동에서 8억 이하 아파트를 추천해줘
             </button>
             <button type="button">
-              출퇴근이 중요해
+              서현동에서 15억 이하 아파트를 추천해줘
             </button>
             <button type="button">
-              지역을 추천해 줘
+              직장이 판교인 신혼부부를 위한 9억 이하 아파트를 추천해줘
             </button>
           </div>
         </div>
       </section>
       <section class="feature-section">
-        <a class="feature-link" th:href="@{/about/service}" target="_blank" rel="noopener noreferrer">
+        <a class="feature-link" th:href="@{/about/service}">
           <article>
             <div class="feature-icon">
               <i class="ti ti-building-estate">
@@ -111,7 +111,7 @@
             </p>
           </article>
         </a>
-        <a class="feature-link public-link" th:href="@{/property/map}" target="_blank" rel="noopener noreferrer">
+        <a class="feature-link public-link" th:href="@{/property/map}">
           <article>
             <div class="feature-icon">
               <i class="ti ti-map-2">
@@ -125,7 +125,7 @@
             </p>
           </article>
         </a>
-        <a class="feature-link" th:href="@{/market/trend}" target="_blank" rel="noopener noreferrer">
+        <a class="feature-link" th:href="@{/market/trend}">
           <article>
             <div class="feature-icon">
               <i class="ti ti-chart-line">
@@ -139,7 +139,7 @@
             </p>
           </article>
         </a>
-        <a class="feature-link" th:href="@{/property/register}" target="_blank" rel="noopener noreferrer">
+        <a class="feature-link" th:href="@{/property/register}">
           <article>
             <div class="feature-icon">
               <i class="ti ti-home-plus">

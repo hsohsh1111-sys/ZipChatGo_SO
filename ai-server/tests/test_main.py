@@ -35,6 +35,7 @@ class FakeOpenAIProvider:
         recent_context=None,
         search_properties=None,
         get_properties_by_ids=None,
+        search_poi=None,
         find_transit_station=None,
         get_adjacent_legal_dongs=None,
         search_real_estate_law=None,
@@ -48,6 +49,7 @@ class FakeOpenAIProvider:
         return AgentReply(
             message=f"AI response to: {message}",
             actions=[HighlightPropertiesAction(property_ids=[427])],
+            property_search_mode="properties",
         )
 
 
@@ -57,6 +59,7 @@ def test_agent_chat_returns_provider_response() -> None:
     try:
         response = client.post(
             "/agent/chat",
+            headers={"X-Internal-API-Key": main.get_internal_api_key()},
             json={
                 "message": "안녕하세요",
                 "appState": {
@@ -137,6 +140,7 @@ def test_agent_chat_returns_provider_response() -> None:
             "last_referenced_property_id": None,
             "recent_properties": [],
         },
+        "property_search_mode": "properties",
     }
     assert provider.app_state["selected_property_id"] == "427"
     assert provider.app_state["selected_property"]["building_name"] == "정든마을 테스트단지"

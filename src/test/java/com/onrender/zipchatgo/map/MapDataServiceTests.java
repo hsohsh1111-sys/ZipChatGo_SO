@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.ArgumentMatchers;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import tools.jackson.databind.ObjectMapper;
@@ -39,10 +42,9 @@ class MapDataServiceTests {
         reset(jdbcTemplate);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void searchesPropertiesWithStationNameTypeAndMaximumPrice() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 property(1L, "정자아파트", "아파트", 750_000_000L, "성남시 분당구 정자동"),
                 property(2L, "정자고가아파트", "아파트", 900_000_000L, "성남시 분당구 정자동"),
                 property(3L, "판교빌라", "빌라", 700_000_000L, "성남시 분당구 백현동")));
@@ -53,10 +55,10 @@ class MapDataServiceTests {
         assertThat(result.properties()).hasSize(1);
         assertThat(result.properties().getFirst().get("id")).isEqualTo(1L);
         assertThat(result.properties().getFirst()).doesNotContainKey("description");
-        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 12 MONTH")), any(RowMapper.class));
+        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 12 MONTH")),
+                ArgumentMatchers.<RowMapper<Map<String, Object>>>any());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void selectedBuildingHistoryMatchesExactDongAndNameAndSortsFiveTransactions() {
         List<Map<String, Object>> rows = new java.util.ArrayList<>();
@@ -68,7 +70,7 @@ class MapDataServiceTests {
                 84.91, LocalDate.of(2025, 1, 1)));
         rows.add(transaction(301L, "효자촌(럭키)2", "성남시 분당구 서현동",
                 84.91, LocalDate.of(2025, 2, 1)));
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(rows);
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(rows);
 
         MapDataService.PropertySearchResult result = service.searchProperties(
                 null, "아파트", null, null, 5, null, "contract_date", "desc",
@@ -77,13 +79,13 @@ class MapDataServiceTests {
         assertThat(result.totalCount()).isEqualTo(6);
         assertThat(result.properties()).extracting(item -> item.get("id"))
                 .containsExactly(105L, 104L, 103L, 102L, 101L);
-        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 36 MONTH")), any(RowMapper.class));
+        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 36 MONTH")),
+                ArgumentMatchers.<RowMapper<Map<String, Object>>>any());
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void transactionAreaClassIncludesAllEightyFourSquareMeterRecords() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 transaction(1L, "효자촌(럭키)", "성남시 분당구 서현동", 84.91, LocalDate.of(2025, 1, 1)),
                 transaction(2L, "효자촌(럭키)", "성남시 분당구 서현동", 84.97, LocalDate.of(2025, 2, 1)),
                 transaction(3L, "효자촌(럭키)", "성남시 분당구 서현동", 84.99, LocalDate.of(2025, 3, 1)),
@@ -97,10 +99,9 @@ class MapDataServiceTests {
                 .containsExactly(3L, 2L, 1L);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void selectedDongTransactionHistoryUsesLegalDongCodeAndDateOrder() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 transaction(1L, "A", "성남시 분당구 정자동", 84.91, LocalDate.of(2024, 3, 1)),
                 transaction(2L, "B", "성남시 분당구 수내동", 84.91, LocalDate.of(2025, 1, 1)),
                 transaction(3L, "C", "성남시 분당구 정자동", 84.91, LocalDate.of(2024, 7, 1))));
@@ -112,10 +113,9 @@ class MapDataServiceTests {
         assertThat(result.properties()).extracting(item -> item.get("id")).containsExactly(3L, 1L);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void namedBuildingHistoryRequiresExactNameAndDoesNotMixAmbiguousDongs() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 transaction(1L, "효자촌(럭키)", "성남시 분당구 서현동", 84.91, LocalDate.of(2025, 1, 1)),
                 transaction(2L, "효자촌(럭키)2", "성남시 분당구 서현동", 84.91, LocalDate.of(2025, 2, 1)),
                 transaction(3L, "효자촌(럭키)", "성남시 분당구 정자동", 84.91, LocalDate.of(2025, 3, 1))));
@@ -133,10 +133,9 @@ class MapDataServiceTests {
         assertThat(resolved.properties()).extracting(item -> item.get("id")).containsExactly(1L);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void normalPriceRankingKeepsExistingTwelveMonthScope() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 property(1L, "A", "아파트", 600_000_000L, "성남시 분당구 정자동"),
                 property(2L, "B", "아파트", 400_000_000L, "성남시 분당구 정자동")));
 
@@ -144,12 +143,13 @@ class MapDataServiceTests {
                 null, "아파트", 700_000_000L, null, 2, null, "sale_price", "asc");
 
         assertThat(result.properties()).extracting(item -> item.get("id")).containsExactly(2L, 1L);
-        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 12 MONTH")), any(RowMapper.class));
+        verify(jdbcTemplate).query(argThat((String sql) -> sql.contains("INTERVAL 12 MONTH")),
+                ArgumentMatchers.<RowMapper<Map<String, Object>>>any());
     }
 
     @Test
     void searchesPropertiesInsideCurrentMapBounds() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 property(1L, "화면 안 아파트", "아파트", 750_000_000L,
                         "성남시 분당구 백현동", 37.394, 127.111),
                 property(2L, "화면 밖 아파트", "아파트", 700_000_000L,
@@ -168,7 +168,7 @@ class MapDataServiceTests {
 
     @Test
     void searchesPropertiesBySelectedLegalDongCode() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 property(1L, "판교동 아파트", "아파트", 750_000_000L,
                         "성남시 분당구 판교동"),
                 property(2L, "삼평동 아파트", "아파트", 700_000_000L,
@@ -180,10 +180,9 @@ class MapDataServiceTests {
         assertThat(result.properties().getFirst().get("id")).isEqualTo(1L);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void getsPropertiesByIdsInRequestedOrderAndReportsMissingIds() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 property(427L, "first", "apartment", 780_000_000L, "district-a"),
                 property(903L, "second", "villa", 650_000_000L, "district-b")));
         MapDataService.PropertiesByIdsResult result =
@@ -212,7 +211,7 @@ class MapDataServiceTests {
 
     @Test
     void searchesPoisByActualCategorySubtypeAndRegion() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 poi("H1", "정자종합병원", "의료", "종합병원", "성남시 분당구 정자동", 37.37, 127.11),
                 poi("H2", "수내병원", "의료", "병원", "성남시 분당구 수내동", 37.38, 127.12),
                 poi("S1", "정자초등학교", "교육", "초등학교", "성남시 분당구 정자동", 37.371, 127.111)));
@@ -230,7 +229,7 @@ class MapDataServiceTests {
 
     @Test
     void searchesPoisByDistanceAndReturnsNearestFirst() {
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(List.of(
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(List.of(
                 poi("B2", "먼 정류장", "교통", "버스정류장", "성남시 분당구 정자동", 37.380, 127.110),
                 poi("B1", "가까운 정류장", "교통", "버스정류장", "성남시 분당구 정자동", 37.371, 127.110)));
         MapDataService.PoiSearchResult result = service.searchPois(
@@ -242,7 +241,6 @@ class MapDataServiceTests {
         assertThat((Long) result.pois().getFirst().get("distance_m")).isBetween(100L, 120L);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     void countsAllPoisInsideSelectedLegalDongBeyondDisplayLimit() {
         List<Map<String, Object>> schools = new java.util.ArrayList<>();
@@ -252,7 +250,7 @@ class MapDataServiceTests {
         }
         schools.add(poi("OUT", "다른 동 학교", "교육", "학교",
                 "성남시 분당구 정자동", 37.395, 127.110));
-        when(jdbcTemplate.query(anyString(), any(RowMapper.class))).thenReturn(schools);
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any())).thenReturn(schools);
 
         MapDataService.PoiSearchResult result = service.searchPois(
                 "교육", "학교", null, null, null, null, null, 10, "41135103");
@@ -273,6 +271,36 @@ class MapDataServiceTests {
         assertThat(service.getMapPois().data())
                 .extracting(poi -> poi.get("poi_id"))
                 .contains(searchedId);
+    }
+
+    @Test
+    void loadsOnlyRequestedPoiCategoryForMapToggle() {
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any(), any(Object[].class)))
+                .thenReturn(List.of(
+                        poi("S1", "학교", "교육", "학교", "분당구", 37.37, 127.11)));
+
+        MapDataService.MapDataResult result = service.getMapPois("교육");
+
+        assertThat(result.source()).isEqualTo(MapDataService.MapDataSource.TIDB);
+        assertThat(result.data()).extracting(item -> item.get("category"))
+                .containsOnly("교육");
+        verify(jdbcTemplate).query(
+                argThat((String sql) -> sql.contains("WHERE category = ?")),
+                ArgumentMatchers.<RowMapper<Map<String, Object>>>any(),
+                eq("교육"));
+    }
+
+    @Test
+    void loadsPoiFallbackOnlyAfterCategoryQueryFails() {
+        when(jdbcTemplate.query(anyString(), ArgumentMatchers.<RowMapper<Map<String, Object>>>any(), any(Object[].class)))
+                .thenThrow(new DataAccessResourceFailureException("test failure"));
+
+        MapDataService.MapDataResult result = service.getMapPois("교육");
+
+        assertThat(result.source()).isEqualTo(MapDataService.MapDataSource.FALLBACK_JSON);
+        assertThat(result.data()).isNotEmpty();
+        assertThat(result.data()).extracting(item -> item.get("category"))
+                .containsOnly("교육");
     }
 
     private Map<String, Object> property(

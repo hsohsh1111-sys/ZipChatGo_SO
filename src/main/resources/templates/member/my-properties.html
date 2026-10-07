@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>내 매물 | 집찾GO</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="stylesheet" th:href="@{/css/common.css}">
+  <link rel="stylesheet" th:href="@{/css/favorite.css}">
+  <link rel="stylesheet" th:href="@{/css/my-properties.css}">
+</head>
+<body class="favorite-page">
+  <header class="main-header" id="mainHeader">
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/logo.png}" alt="집찾GO">
+    </a>
+
+    <button class="menu-btn" id="menuBtn" type="button" aria-label="메뉴 열기" aria-controls="mobileNav" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <nav class="top-nav" id="mobileNav">
+      <a class="guest-menu" th:href="@{/member/login}"><i class="ti ti-login" aria-hidden="true"></i> 로그인</a>
+      <a class="guest-menu" th:href="@{/member/signup}"><i class="ti ti-user-plus" aria-hidden="true"></i> 회원가입</a>
+      <a th:href="@{/support/contact}"><i class="ti ti-headset" aria-hidden="true"></i> 고객센터</a>
+      <a class="user-menu" th:href="@{/favorites}"><i class="ti ti-heart" aria-hidden="true"></i> 관심매물</a>
+      <a class="user-menu logout-btn" href="#"><i class="ti ti-logout" aria-hidden="true"></i> 로그아웃</a>
+    </nav>
+  </header>
+
+  <main class="favorite-main">
+    <section class="favorite-content" aria-labelledby="mpTitle">
+      <div class="favorite-heading">
+        <p class="favorite-eyebrow">MY PROPERTIES</p>
+        <h1 id="mpTitle">내 매물</h1>
+        <p id="mpSummary" class="favorite-summary" aria-live="polite">
+          총 <strong>0개</strong>의 매물이 있습니다.
+        </p>
+        <a class="favorite-map-back" th:href="@{/property/register}">
+          <i class="ti ti-plus" aria-hidden="true"></i>
+          매물 등록하기
+        </a>
+      </div>
+
+      <div class="mp-state" id="mpState">불러오는 중...</div>
+      <div id="mpGrid" class="favorite-grid" aria-live="polite"></div>
+
+      <section id="mpEmpty" class="favorite-empty" hidden>
+        <span class="favorite-empty-icon mp-empty-icon" aria-hidden="true"><i class="ti ti-building-estate"></i></span>
+        <h2>아직 등록한 매물이 없습니다</h2>
+        <p>직접 소유한 매물을 등록하면 이곳에서 확인하고 관리할 수 있어요.</p>
+        <a th:href="@{/property/register}">첫 매물 등록하기</a>
+      </section>
+    </section>
+  </main>
+
+  <footer class="trend-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a th:href="@{/}">
+          <img th:src="@{/images/logo.png}" alt="집찾GO">
+        </a>
+        <div>
+          <h2>집찾GO</h2>
+          <p>AI와 데이터로 나에게 맞는 집을 더 쉽고 빠르게 찾습니다.</p>
+        </div>
+      </div>
+      <div class="footer-menu">
+        <a th:href="@{/}">메인</a>
+        <a th:href="@{/property/map}">지도</a>
+        <a th:href="@{/property/register}">매물 등록</a>
+        <a th:href="@{/about/service}">서비스 소개</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>
+        집찾GO | AI 부동산 추천 플랫폼
+        <span>시장 데이터는 참고용 정보입니다.</span>
+        <span>help@jipchatgo.com</span>
+      </p>
+      <p>Copyright 2026 집찾GO. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script th:src="@{/js/common.js}"></script>
+  <script th:src="@{/js/my-properties.js}"></script>
+</body>
+</html>

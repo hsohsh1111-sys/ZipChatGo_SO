@@ -169,8 +169,11 @@ public class MapDataController {
     }
 
     @GetMapping(value = "/pois", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Map<String, Object>>> pois() {
-        return jsonResponse(mapDataService.getMapPois());
+    public ResponseEntity<List<Map<String, Object>>> pois(
+            @RequestParam(required = false) String category) {
+        return jsonResponse(category == null || category.isBlank()
+                ? mapDataService.getMapPois()
+                : mapDataService.getMapPois(category));
     }
 
     @GetMapping(value = "/pois/search", produces = MediaType.APPLICATION_JSON_VALUE)

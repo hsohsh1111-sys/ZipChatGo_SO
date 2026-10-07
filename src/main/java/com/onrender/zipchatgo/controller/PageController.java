@@ -36,6 +36,17 @@ public class PageController {
         return "member/account";
     }
 
+    // 내가 등록한 매물 목록/상세 - 비로그인/게스트 처리는 페이지 스크립트가 API 응답으로 판단
+    @GetMapping("/my/properties")
+    public String myProperties() {
+        return "member/my-properties";
+    }
+
+    @GetMapping("/my/properties/{propertyId}")
+    public String myPropertyDetail() {
+        return "member/my-property-detail";
+    }
+
     @GetMapping("/member/signup")
     public String signup(Model model) {
         model.addAttribute("defaultTab", "signup");

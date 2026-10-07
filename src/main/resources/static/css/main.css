@@ -363,13 +363,22 @@ body {
 
 @media (max-width: 768px) {
   .main-page {
-    padding: 86px 0 24px;
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: 84px 0 12px;
+    padding: clamp(84px, 9svh, 88px) 0 clamp(12px, 2svh, 24px);
+
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2svh, 20px);
   }
 
   .hero-section {
+    flex: 1 0 auto;
     width: 92%;
-    min-height: calc(100vh - 260px);
-    padding: 28px 18px;
+    min-height: auto;
+    margin: 0 auto;
+    padding: clamp(28px, 5svh, 48px) 18px;
     border-radius: 28px;
   }
 
@@ -433,18 +442,23 @@ body {
     margin-top: 14px;
 
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 9px;
   }
 
   .quick-tags button {
-    padding: 10px 8px;
+    width: 100%;
+    padding: 10px 12px;
     font-size: 13px;
+    line-height: 1.45;
+    white-space: normal;
+    word-break: keep-all;
   }
 
   .feature-section {
+    flex: 0 0 auto;
     width: 92%;
-    margin-top: 12px;
+    margin: 0 auto;
 
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -488,7 +502,7 @@ body {
   }
 
   .hero-section {
-    padding: 24px 16px;
+    padding-inline: 16px;
   }
 
   .hero-content h1 {

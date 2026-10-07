@@ -12,6 +12,7 @@ from app.config import safe_search_log, search_diagnostics_enabled
 from app.providers.llm_provider import AgentReply, ToolHandler
 from app.schemas import (
     AddFavoriteAction,
+    BUNDANG_LEGAL_DONG_CODE_BY_NAME,
     BUNDANG_LEGAL_DONG_NAME_VALUES,
     ClearPoiHighlightsAction,
     FitBoundsAction,
@@ -40,6 +41,16 @@ SEARCH_PROPERTIES_TOOL = {
     "parameters": {
         "type": "object",
         "properties": {
+            "region_name": {
+                "type": ["string", "null"],
+                "enum": [*BUNDANG_LEGAL_DONG_NAME_VALUES, None],
+                "description": (
+                    "사용자가 이번 요청에서 명시한 분당구 법정동 이름입니다. "
+                    "예: 판교는 판교동. '현재 지역', '선택 지역'처럼 App State 지역을 "
+                    "참조하거나 역·단지·주소를 말한 경우에는 null입니다. region_name을 "
+                    "사용할 때 keyword는 별도의 단지명이나 주소 조건이 있을 때만 설정합니다."
+                ),
+            },
             "keyword": {
                 "type": ["string", "null"],
                 "description": "지역, 역명, 단지명 또는 주소 검색어. 조건이 없으면 null입니다.",
@@ -89,7 +100,7 @@ SEARCH_PROPERTIES_TOOL = {
             },
         },
         "required": [
-            "keyword", "property_type", "max_price", "search_mode",
+            "region_name", "keyword", "property_type", "max_price", "search_mode",
             "exact_building_name", "exclusive_area", "limit", "sort_by", "sort_order"
         ],
         "additionalProperties": False,
@@ -885,7 +896,14 @@ class OpenAIProvider:
             )
         context_items: list[dict[str, str]] = []
         if app_state is not None:
-            state_json = json.dumps(app_state, ensure_ascii=False, separators=(",", ":"))
+            contextual_app_state = {
+                key: value for key, value in app_state.items() if key != "filters"
+            }
+            state_json = json.dumps(
+                contextual_app_state,
+                ensure_ascii=False,
+                separators=(",", ":"),
+            )
             context_items.append({
                 "role": "developer",
                 "content": (
@@ -943,6 +961,7 @@ class OpenAIProvider:
         searched_stations: list[dict[str, Any]] = []
         law_search_attempted = False
         law_search_results: list[dict[str, Any]] = []
+        executed_property_search_mode: str | None = None
         station_search_allowed = "역" in message
         required_region_name = _find_legal_dong_map_request(message)
         required_adjacency_region = _find_legal_dong_adjacency_request(
@@ -1111,13 +1130,19 @@ class OpenAIProvider:
                         last_referenced_property_id=last_referenced_property_id,
                         recent_properties=next_recent_properties,
                     ),
+                    property_search_mode=executed_property_search_mode,
                 )
 
             running_input.extend(response.output)
             for function_call in function_calls:
                 post_tool_instruction = None
+                poi_search_trace = None
                 if function_call.name == "search_properties" and search_properties:
                     arguments = json.loads(function_call.arguments)
+                    explicit_region_name = arguments.pop("region_name", None)
+                    explicit_region_code = BUNDANG_LEGAL_DONG_CODE_BY_NAME.get(
+                        explicit_region_name
+                    )
                     search_trace = f"{id(arguments):x}"
                     if search_diagnostics_enabled():
                         filters = app_state.get("filters") if app_state else None
@@ -1149,6 +1174,8 @@ class OpenAIProvider:
                             arguments.pop("legal_dong_code", None)
                             if not selected_property_state_mismatch and selected_property_id is not None:
                                 arguments["selected_property_id"] = selected_property_id
+                        elif explicit_region_code:
+                            arguments["legal_dong_code"] = explicit_region_code
                         elif (
                             not arguments.get("exact_building_name")
                             and not arguments.get("keyword")
@@ -1156,10 +1183,14 @@ class OpenAIProvider:
                             and selected_region.get("type") == "legal_dong"
                         ):
                             arguments["legal_dong_code"] = selected_region.get("code")
-                    elif not arguments.get("keyword") and isinstance(selected_region, dict):
+                    elif explicit_region_code:
+                        arguments["legal_dong_code"] = explicit_region_code
+                        arguments.pop("map_bounds", None)
+                    elif isinstance(selected_region, dict):
                         legal_dong_code = selected_region.get("code")
                         if selected_region.get("type") == "legal_dong" and legal_dong_code:
                             arguments["legal_dong_code"] = legal_dong_code
+                            arguments.pop("map_bounds", None)
                     elif not arguments.get("keyword") and app_state and app_state.get("map_bounds"):
                         arguments["map_bounds"] = app_state["map_bounds"]
                     if (
@@ -1178,6 +1209,7 @@ class OpenAIProvider:
                                 safe_search_log(arguments),
                             )
                         result = search_properties(arguments)
+                        executed_property_search_mode = search_mode
                         post_tool_instruction = (
                             "매물 가격을 답변할 때는 각 결과의 sale_price_display를 그대로 복사하세요. "
                             "sale_price 숫자를 억/만원으로 직접 환산하지 마세요."
@@ -1243,6 +1275,17 @@ class OpenAIProvider:
                         )
                 elif function_call.name == "search_poi" and search_poi:
                     arguments = json.loads(function_call.arguments)
+                    poi_search_trace = f"{id(arguments):x}"
+                    if search_diagnostics_enabled():
+                        logging.getLogger("uvicorn.error").info(
+                            "[poi-search:%s] message=%s selected_region=%s llm_arguments=%s",
+                            poi_search_trace,
+                            safe_search_log(message),
+                            safe_search_log(
+                                app_state.get("selected_region") if app_state else None
+                            ),
+                            safe_search_log(arguments),
+                        )
                     location_source = arguments.pop("location_source", None)
                     arguments.pop("legal_dong_code", None)
                     coordinates = None
@@ -1295,6 +1338,12 @@ class OpenAIProvider:
                             arguments["lat"], arguments["lng"] = coordinates
                             arguments["region"] = None
                             arguments.pop("legal_dong_code", None)
+                        if search_diagnostics_enabled():
+                            logging.getLogger("uvicorn.error").info(
+                                "[poi-search:%s] provider_arguments=%s",
+                                poi_search_trace,
+                                safe_search_log(arguments),
+                            )
                         result = search_poi(arguments)
                         valid_pois = [
                             poi for poi in result.get("pois", [])
@@ -1511,6 +1560,18 @@ class OpenAIProvider:
                         if action not in actions:
                             actions.append(action)
                         result = {"status": "accepted"}
+                if (
+                    function_call.name == "search_poi"
+                    and search_diagnostics_enabled()
+                ):
+                    pois = result.get("pois") if isinstance(result, dict) else None
+                    logging.getLogger("uvicorn.error").info(
+                        "[poi-search:%s] tool_output iteration=%s tool=%s result_count=%s",
+                        poi_search_trace,
+                        iteration,
+                        function_call.name,
+                        len(pois) if isinstance(pois, list) else 0,
+                    )
                 running_input.append(
                     {
                         "type": "function_call_output",

@@ -132,6 +132,7 @@ def test_selected_region_school_list_stays_within_selected_region() -> None:
 
     assert search_poi.call_args.args[0]["legal_dong_code"] == "41135103"
     assert [action.type for action in reply.actions] == ["SET_POI_CATEGORY", "HIGHLIGHT_POIS"]
+    assert reply.property_search_mode is None
 
 
 def test_missing_selected_region_does_not_search_guessed_location() -> None:

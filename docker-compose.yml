@@ -1,0 +1,49 @@
+services:
+  ai-server:
+    build:
+      context: ./ai-server
+      dockerfile: Dockerfile
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY}"
+      OPENAI_MODEL: "${OPENAI_MODEL:-gpt-4o-mini}"
+      OPENAI_EXAM_EVALUATION_MODEL: "${OPENAI_EXAM_EVALUATION_MODEL:-gpt-4o-mini}"
+      LAW_API_OC: "${LAW_API_OC:-}"
+      LAW_VECTOR_STORE_ID: "${LAW_VECTOR_STORE_ID:-}"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
+      SPRING_SERVER_BASE_URL: "http://spring:8080"
+      ENABLE_API_DOCS: "${ENABLE_API_DOCS:-false}"
+      AI_SEARCH_DIAGNOSTICS: "${AI_SEARCH_DIAGNOSTICS:-false}"
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  spring:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_DATABASE: "${DB_DATABASE}"
+      DB_USERNAME: "${DB_USERNAME}"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      MOLIT_SERVICE_KEY: "${MOLIT_SERVICE_KEY:-}"
+      MOLIT_MAP_SERVICE_KEY: "${MOLIT_MAP_SERVICE_KEY:-}"
+      DEFAULT_LAWD_CD: "${DEFAULT_LAWD_CD:-41117}"
+      NAVER_MAPS_CLIENT_KEY: "${NAVER_MAPS_CLIENT_KEY:-}"
+      SUPABASE_URL: "${SUPABASE_URL:-}"
+      SUPABASE_SERVICE_KEY: "${SUPABASE_SERVICE_KEY:-}"
+      SUPABASE_BUCKET: "${SUPABASE_BUCKET:-}"
+      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID:-}"
+      GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET:-}"
+      NAVER_CLIENT_ID: "${NAVER_CLIENT_ID:-}"
+      NAVER_CLIENT_SECRET: "${NAVER_CLIENT_SECRET:-}"
+      KAKAO_CLIENT_ID: "${KAKAO_CLIENT_ID:-}"
+      KAKAO_CLIENT_SECRET: "${KAKAO_CLIENT_SECRET:-}"
+      INTERNAL_API_KEY: "${INTERNAL_API_KEY}"
+      AI_SERVER_URL: "http://ai-server:8000"
+    depends_on:
+      - ai-server
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

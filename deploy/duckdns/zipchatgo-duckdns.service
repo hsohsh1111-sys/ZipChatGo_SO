@@ -1,0 +1,15 @@
+[Unit]
+Description=Update ZipChatGo DuckDNS with the current EC2 public IPv4
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/zipchatgo/duckdns.env
+ExecStart=/usr/local/sbin/zipchatgo-duckdns-update
+User=root
+Group=root
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict

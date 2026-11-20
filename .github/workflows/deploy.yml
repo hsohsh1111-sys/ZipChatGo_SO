@@ -3,114 +3,95 @@ name: Build and deploy to EC2
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: production-ec2
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - name: Checkout code
+      - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: temurin
+          java-version: '21'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Make Gradle wrapper executable
-        run: chmod +x gradlew
+      - name: Build Spring Boot application
+        run: ./gradlew --no-daemon bootJar -x test
 
-      - name: Build and test
+      - name: Verify deployment configuration
+        run: docker compose config --quiet
         env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: ./gradlew build --no-daemon
+          DB_HOST: ci-placeholder
+          DB_PORT: '4000'
+          DB_DATABASE: housepick
+          DB_USERNAME: ci-placeholder
+          DB_PASSWORD: ci-placeholder
+          INTERNAL_API_KEY: ci-placeholder
 
-      - name: Build Docker image
-        if: github.event_name == 'push'
-        run: docker build --tag homepick:${GITHUB_SHA} .
-
-      - name: Save Docker image
-        if: github.event_name == 'push'
-        run: docker save homepick:${GITHUB_SHA} --output homepick-image.tar
-
-      - name: Make Docker image readable for upload
-        if: github.event_name == 'push'
-        run: chmod 644 homepick-image.tar
-
-      - name: Upload Docker image to EC2
-        if: github.event_name == 'push'
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          source: homepick-image.tar
-          target: /tmp
-          timeout: 120s
-
-      - name: Deploy on EC2
-        if: github.event_name == 'push'
+  deploy:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Deploy on EC2 over SSH
         uses: appleboy/ssh-action@v1.2.0
         env:
-          IMAGE_TAG: ${{ github.sha }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_DATABASE: ${{ secrets.DB_DATABASE }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          FIREBASE_WEB_API_KEY: ${{ secrets.FIREBASE_WEB_API_KEY }}
-          FIREBASE_WEB_AUTH_DOMAIN: ${{ secrets.FIREBASE_WEB_AUTH_DOMAIN }}
-          FIREBASE_WEB_PROJECT_ID: ${{ secrets.FIREBASE_WEB_PROJECT_ID }}
-          FIREBASE_WEB_STORAGE_BUCKET: ${{ secrets.FIREBASE_WEB_STORAGE_BUCKET }}
-          FIREBASE_WEB_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_WEB_MESSAGING_SENDER_ID }}
-          FIREBASE_WEB_APP_ID: ${{ secrets.FIREBASE_WEB_APP_ID }}
+          APP_DIR: ${{ secrets.EC2_APP_DIR }}
+          DEPLOY_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          envs: IMAGE_TAG,DB_HOST,DB_PORT,DB_DATABASE,DB_USERNAME,DB_PASSWORD,FIREBASE_WEB_API_KEY,FIREBASE_WEB_AUTH_DOMAIN,FIREBASE_WEB_PROJECT_ID,FIREBASE_WEB_STORAGE_BUCKET,FIREBASE_WEB_MESSAGING_SENDER_ID,FIREBASE_WEB_APP_ID
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.EC2_SSH_PORT || '22' }}
+          envs: APP_DIR,DEPLOY_SHA
+          command_timeout: 12m
           script: |
             set -eu
-            docker load --input /tmp/homepick-image.tar
-            docker stop homepick || true
-            docker rm homepick || true
-            docker run --detach \
-              --name homepick \
-              --restart unless-stopped \
-              --publish 8080:8080 \
-              --env DB_HOST="$DB_HOST" \
-              --env DB_PORT="$DB_PORT" \
-              --env DB_DATABASE="$DB_DATABASE" \
-              --env DB_USERNAME="$DB_USERNAME" \
-              --env DB_PASSWORD="$DB_PASSWORD" \
-              --env FIREBASE_WEB_API_KEY="$FIREBASE_WEB_API_KEY" \
-              --env FIREBASE_WEB_AUTH_DOMAIN="$FIREBASE_WEB_AUTH_DOMAIN" \
-              --env FIREBASE_WEB_PROJECT_ID="$FIREBASE_WEB_PROJECT_ID" \
-              --env FIREBASE_WEB_STORAGE_BUCKET="$FIREBASE_WEB_STORAGE_BUCKET" \
-              --env FIREBASE_WEB_MESSAGING_SENDER_ID="$FIREBASE_WEB_MESSAGING_SENDER_ID" \
-              --env FIREBASE_WEB_APP_ID="$FIREBASE_WEB_APP_ID" \
-              "homepick:$IMAGE_TAG"
-            for attempt in $(seq 1 12); do
-              if [ "$(docker inspect --format='{{.State.Running}}' homepick)" = "true" ]; then
-                break
+            APP_DIR="${APP_DIR:-/opt/zipchatgo}"
+            cd "$APP_DIR"
+            test -z "$(git status --porcelain)"
+            git fetch --no-tags origin main
+            PREVIOUS_SHA=$(git rev-parse HEAD)
+            git checkout --quiet main
+            git pull --ff-only origin main
+            test "$(git rev-parse HEAD)" = "$DEPLOY_SHA"
+            test -f .env
+            docker compose config --quiet
+            if ! docker compose build; then
+              docker compose logs --tail=200 spring ai-server || true
+              exit 1
+            fi
+            if ! docker compose up -d --remove-orphans; then
+              git checkout --quiet --detach "$PREVIOUS_SHA"
+              docker compose up -d --build --remove-orphans || docker compose logs --tail=200 spring ai-server || true
+              git checkout --quiet main
+              exit 1
+            fi
+            for attempt in $(seq 1 36); do
+              if curl --fail --silent --show-error http://127.0.0.1:8080/health >/dev/null; then
+                docker compose ps
+                exit 0
               fi
               sleep 5
             done
-            if [ "$(docker inspect --format='{{.State.Running}}' homepick)" != "true" ]; then
-              docker logs homepick
-              exit 1
-            fi
-            docker ps --filter name=homepick
-            rm -f /tmp/homepick-image.tar
+            docker compose ps
+            docker compose logs --tail=200 spring ai-server
+            git checkout --quiet --detach "$PREVIOUS_SHA"
+            docker compose up -d --build --remove-orphans || docker compose logs --tail=200 spring ai-server || true
+            git checkout --quiet main
+            exit 1
